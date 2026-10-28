@@ -24,7 +24,9 @@ const tabsListVariants = cva('group/tabs-list inline-flex w-fit items-center', {
     variant: {
       default: 'gap-1 rounded-md bg-surface-card p-1',
       /** Abas do catálogo do Figma: texto com sublinhado de 2 px na ativa. */
-      line: 'gap-4 md:gap-5',
+      line: 'gap-2.5 md:gap-5',
+      /** Abas do detalhe do NFT (Figma): largura total, linha inferior e sublinhado de 3 px na ativa. */
+      underline: 'w-full gap-8 border-b border-primary/25',
     },
   },
   defaultVariants: {
@@ -55,8 +57,10 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
         'relative inline-flex cursor-pointer items-center justify-center whitespace-nowrap text-foreground focus-ring transition-colors hover:text-text-accent disabled:pointer-events-none disabled:opacity-50',
         'group-data-[variant=default]/tabs-list:rounded-sm group-data-[variant=default]/tabs-list:px-3 group-data-[variant=default]/tabs-list:py-1.5 group-data-[variant=default]/tabs-list:text-body-sm group-data-[variant=default]/tabs-list:data-[state=active]:bg-surface-raised group-data-[variant=default]/tabs-list:data-[state=active]:text-text-accent',
         'group-data-[variant=line]/tabs-list:pb-1 group-data-[variant=line]/tabs-list:text-body-sm group-data-[variant=line]/tabs-list:leading-4 md:group-data-[variant=line]/tabs-list:text-body md:group-data-[variant=line]/tabs-list:leading-4 md:group-data-[variant=line]/tabs-list:font-medium',
-        'data-[state=active]:font-bold data-[state=active]:text-text-accent md:data-[state=active]:font-medium',
+        'group-data-[variant=underline]/tabs-list:pb-2.5 group-data-[variant=underline]/tabs-list:text-lead-sm group-data-[variant=underline]/tabs-list:leading-4.5',
+        'data-[state=active]:font-bold data-[state=active]:text-text-accent md:group-data-[variant=line]/tabs-list:data-[state=active]:font-medium',
         'after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:bg-primary after:opacity-0 group-data-[variant=line]/tabs-list:data-[state=active]:after:opacity-100',
+        'group-data-[variant=underline]/tabs-list:after:-bottom-px group-data-[variant=underline]/tabs-list:after:h-0.75 group-data-[variant=underline]/tabs-list:data-[state=active]:after:opacity-100',
         className,
       )}
       {...props}

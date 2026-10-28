@@ -16,10 +16,15 @@ test.describe('detalhe do NFT', () => {
     const nft = await detail.loadAfter(available.id, () => mock.open(NftDetailPage.path(available.id)))
 
     await expect(detail.title).toHaveText(nft.name)
-    // A galeria mostra uma imagem por vez; as miniaturas trocam a imagem principal.
-    for (const [index, image] of nft.images.entries()) {
-      await detail.thumbnail(index + 1, nft.images.length).click()
-      await expect(detail.image(image.alt)).toBeVisible()
+    // A galeria mostra uma imagem por vez; no desktop as miniaturas trocam a imagem principal
+    // (o frame mobile do Figma não tem miniaturas, só a primeira imagem).
+    if (await detail.thumbnail(1, nft.images.length).isVisible()) {
+      for (const [index, image] of nft.images.entries()) {
+        await detail.thumbnail(index + 1, nft.images.length).click()
+        await expect(detail.image(image.alt)).toBeVisible()
+      }
+    } else {
+      await expect(detail.image(nft.images[0]?.alt ?? '')).toBeVisible()
     }
     await expect(detail.editions.getByRole('radio')).toHaveCount(nft.editions.length)
     await expect(detail.buy).toBeEnabled()

@@ -36,7 +36,7 @@ function Slider({
     >
       <SliderPrimitive.Track
         data-slot="slider-track"
-        className="relative h-1 w-full grow rounded-full bg-primary/30"
+        className="relative h-0.75 w-full grow rounded-full bg-primary"
       >
         <SliderPrimitive.Range data-slot="slider-range" className="absolute h-full rounded-full bg-primary" />
       </SliderPrimitive.Track>
@@ -46,7 +46,7 @@ function Slider({
           key={index}
           aria-label={thumbLabels?.[index]}
           aria-valuetext={getValueText?.(thumbValue)}
-          className="block size-3.75 shrink-0 cursor-grab rounded-full border-3 border-ink bg-primary transition-shadow outline-none hover:ring-4 hover:ring-primary/30 focus-visible:ring-4 focus-visible:ring-ring disabled:pointer-events-none"
+          className="block size-4.5 shrink-0 cursor-grab rounded-full border-2 border-ink bg-primary transition-shadow outline-none hover:ring-4 hover:ring-primary/30 focus-visible:ring-4 focus-visible:ring-ring disabled:pointer-events-none"
         />
       ))}
     </SliderPrimitive.Root>

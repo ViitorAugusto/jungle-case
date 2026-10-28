@@ -1,4 +1,4 @@
-import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
+import { createRootRouteWithContext, Outlet, useRouterState } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
 import type { RouterContext } from '@main/router'
@@ -8,6 +8,7 @@ import { SiteFooter } from '@presentation/components/layout/site-footer'
 import { SiteHeader } from '@presentation/components/layout/site-header'
 import type { AppToasterProps } from '@presentation/components/ui/sonner'
 import { lazyWithRetry } from '@presentation/lib/lazy-with-retry'
+import { cn } from '@presentation/lib/utils'
 import {
   FALLBACK_REGION_ID,
   markToasterMounted,
@@ -33,8 +34,20 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   errorComponent: RouteErrorScreen,
 })
 
+/**
+ * Telas mobile do Figma sem rodapé: login e cadastro (telas próprias), carrinho
+ * e pagamento (painel fixo na base, que cobriria o rodapé).
+ */
+const NO_MOBILE_FOOTER_PATHS = ['/login', '/cadastro', '/carrinho', '/checkout']
+
 /** Frame do Figma: 24 px no topo, cabeçalho, 32 px até o conteúdo e 96 px entre seções. */
 function RootLayout() {
+  // Recibo (Figma Confirmação de Pedido): modal isolado sobre o fundo, sem cabeçalho nem rodapé.
+  const isolated = useRouterState({ select: (state) => state.location.pathname.startsWith('/pedidos/') })
+  const routeLoading = useRouterState({ select: (state) => state.status === 'pending' })
+  const hideMobileFooter = useRouterState({
+    select: (state) => NO_MOBILE_FOOTER_PATHS.includes(state.location.pathname),
+  })
   // O Toaster monta depois do carregamento inicial ou no primeiro aviso (ver `notify.ts`).
   const [toasterMounted, setToasterMounted] = useState(false)
   useEffect(() => {
@@ -54,14 +67,20 @@ function RootLayout() {
       >
         Pular para o conteúdo
       </a>
-      <SiteHeader />
-      {/* Altura mínima de uma tela: enquanto a rota carrega, o rodapé não aparece para depois ser empurrado (CLS). */}
-      <main id="conteudo" tabIndex={-1} className="min-h-dvh flex-1 outline-none md:pt-8">
+      {isolated ? null : <SiteHeader />}
+      {/* Altura mínima de uma tela só enquanto a rota carrega (o rodapé não aparece para depois ser empurrado, CLS); carregada, a página termina onde o Figma termina. */}
+      <main
+        id="conteudo"
+        tabIndex={-1}
+        className={cn('flex-1 outline-none md:pt-8', routeLoading && 'min-h-dvh')}
+      >
         <Outlet />
       </main>
-      <div className="mt-12 md:mt-24">
-        <SiteFooter />
-      </div>
+      {isolated ? null : (
+        <div className={cn('mt-12 md:mt-24', hideMobileFooter && 'max-md:hidden')}>
+          <SiteFooter />
+        </div>
+      )}
       <MobileTabBar />
       <RealtimeIndicator />
       {/* No mobile o topo tem voltar/favoritar: o toast desce abaixo dessa faixa para não cobrir os botões. */}

@@ -40,17 +40,43 @@ export type NftEditionDto = {
   readonly priceEth: string
   /** Preço anterior (riscado) quando houve redução; `null` sem promoção. */
   readonly compareAtPriceEth: string | null
-  readonly supply: number
+  /** Tiragem (o "50" de "1/50"); `null` = edição aberta, sem tiragem máxima. */
+  readonly supply: number | null
+  /** Estoque à venda agora (também na edição aberta). */
   readonly available: number
 }
+
+export type NftRarityDto = 'comum' | 'raro'
 
 export type NftDto = {
   readonly id: string
   readonly name: string
+  /** "ID do token" (ex.: `#0042`). */
+  readonly tokenId: string
+  /** Texto curto de "Sobre este NFT". */
+  readonly summary: string
+  /** Texto da aba "Detalhes do NFT"; parágrafos separados por linha em branco. */
   readonly description: string
+  /** Categoria do filtro "Coleções" (base de `collection=` e de "Mais desta coleção"). */
   readonly collection: { readonly id: string; readonly name: string }
+  /** Série do contrato exibida em "Coleção:" nos metadados (ex.: Kurio Apes). */
+  readonly series: { readonly id: string; readonly name: string }
   readonly network: NetworkDto
   readonly creator: { readonly name: string; readonly avatarUrl: string }
+  /** Atributos do token ("Atributos: Óculos, Esmeralda, Raro"). */
+  readonly attributes: readonly string[]
+  /** Selo do card: `raro` exibe "RARO". */
+  readonly rarity: NftRarityDto
+  /** Avaliações de colecionadores: média de 0 a 5 com 1 casa e quantidade. */
+  readonly rating: { readonly average: number; readonly count: number }
+  /** Rede, contrato e direitos autorais da aba "Detalhes do NFT". */
+  readonly provenance: {
+    readonly contractAddress: string
+    readonly tokenStandard: string
+    readonly metadataStorage: string
+    /** Direitos autorais do criador nas vendas secundárias, em %. */
+    readonly royaltyPercent: number
+  }
   readonly images: readonly { readonly url: string; readonly alt: string }[]
   readonly editions: readonly NftEditionDto[]
   readonly featured: boolean
@@ -59,6 +85,19 @@ export type NftDto = {
   readonly createdAt: string
   readonly version: number
 }
+
+/** Avaliação de colecionador (aba "Avaliações de colecionadores (N)"). */
+export type NftReviewDto = {
+  readonly id: string
+  readonly author: { readonly name: string; readonly avatarUrl: string }
+  /** Nota inteira de 1 a 5. */
+  readonly rating: number
+  readonly comment: string
+  readonly createdAt: string
+}
+
+/** `GET /nfts/:id/reviews`: mais recentes primeiro; `total` = `rating.count` do NFT. */
+export type NftReviewsDto = { readonly items: readonly NftReviewDto[]; readonly total: number }
 
 export type PageDto<T> = {
   readonly items: readonly T[]
@@ -119,6 +158,8 @@ export type CartLineDto = {
   readonly id: string
   readonly nftId: string
   readonly editionId: string
+  /** "ID do token" (ex.: `#0042`). */
+  readonly tokenId: string
   readonly nftName: string
   readonly editionName: string
   readonly imageUrl: string
@@ -133,6 +174,7 @@ export type CartDto = {
   readonly lines: readonly CartLineDto[]
   readonly coupon: CouponDto | null
   readonly summary: PriceSummaryDto
+  /** Itens distintos (linhas), base do badge do carrinho. */
   readonly itemCount: number
   readonly version: number
 }
@@ -286,6 +328,7 @@ export const apiRoutes = {
   nfts: '/nfts',
   nftFacets: '/nfts/facets',
   nft: (id: string) => `/nfts/${encodeURIComponent(id)}`,
+  nftReviews: (id: string) => `/nfts/${encodeURIComponent(id)}/reviews`,
   favorites: '/favorites',
   favorite: (nftId: string) => `/favorites/${encodeURIComponent(nftId)}`,
   cart: '/cart',

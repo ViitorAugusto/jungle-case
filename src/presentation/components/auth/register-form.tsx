@@ -13,6 +13,7 @@ import {
 import { SocialLogin } from '@presentation/components/auth/social-login'
 import { FormField } from '@presentation/components/form/form-field'
 import { PasswordField } from '@presentation/components/form/password-field'
+import { authSubmitClass } from '@presentation/components/auth/auth-styles'
 import { Button } from '@presentation/components/ui/button'
 import { useRegister } from '@presentation/hooks/use-session'
 import { userMessageFor } from '@presentation/lib/errors'
@@ -28,8 +29,17 @@ const fieldErrorsOf = (error: unknown): FieldErrors => {
   return {}
 }
 
+/** Campos sem rótulo visível no Figma: o rótulo fica para leitores de tela e o texto de exemplo aparece no campo. */
+const authField = { hideLabel: true, variant: 'auth' } as const
+
+type RegisterFormProps = {
+  readonly search: AuthSearch
+  /** Figma: "Criar conta" no modal desktop, "Criar perfil" na tela mobile. */
+  readonly submitLabel?: string
+}
+
 /** Criar conta. Ao falhar, o foco vai para o primeiro campo inválido; ao concluir, entra e volta ao fluxo anterior. */
-export function RegisterForm({ search }: { readonly search: AuthSearch }) {
+export function RegisterForm({ search, submitLabel = 'Criar conta' }: RegisterFormProps) {
   const router = useRouter()
   const register = useRegister()
   const [values, setValues] = useState<Record<Field, string>>({
@@ -77,42 +87,67 @@ export function RegisterForm({ search }: { readonly search: AuthSearch }) {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col">
       {formMessage ? (
         <p
           role="alert"
-          className="rounded-sm border border-destructive px-4 py-3 text-body-sm text-destructive-foreground"
+          className="mb-4 rounded-sm border border-destructive px-4 py-3 text-body-sm text-destructive-foreground"
         >
           {formMessage}
         </p>
       ) : null}
 
-      <form noValidate onSubmit={submit} className="flex flex-col gap-4">
-        <FormField label="Nome de usuário" type="text" autoComplete="name" required {...bind('name')} />
-        <FormField label="E-mail" type="email" autoComplete="email" required {...bind('email')} />
+      <form noValidate onSubmit={submit} className="flex flex-col gap-3">
+        <FormField
+          label="Nome de usuário"
+          placeholder="Nome de usuário"
+          // Figma Mobile/Cadastro: só este texto de exemplo é centralizado.
+          className="max-md:[&_input]:placeholder:text-center"
+          type="text"
+          autoComplete="name"
+          required
+          {...authField}
+          {...bind('name')}
+        />
+        <FormField
+          label="E-mail"
+          placeholder="Digite seu e-mail"
+          type="email"
+          autoComplete="email"
+          required
+          {...authField}
+          {...bind('email')}
+        />
         <PasswordField
           label="Senha"
+          placeholder="Senha"
           autoComplete="new-password"
           required
           hint={`Use pelo menos ${PASSWORD_MIN_LENGTH} caracteres.`}
+          hideHint
+          {...authField}
           {...bind('password')}
         />
+        {/* Figma: no modal desktop a confirmação não tem o "olho"; no mobile tem. */}
         <PasswordField
           label="Confirmar senha"
+          placeholder="Confirmar senha"
           autoComplete="new-password"
           required
+          toggleClassName="md:hidden"
+          {...authField}
           {...bind('confirmPassword')}
         />
         <Button
           type="submit"
           disabled={register.isPending}
           aria-busy={register.isPending}
-          className="mt-1 w-full"
+          className={authSubmitClass}
         >
-          Criar conta
+          {submitLabel}
         </Button>
       </form>
-      <SocialLogin />
+      <SocialLogin spacing="register" />
     </div>
   )
 }

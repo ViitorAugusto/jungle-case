@@ -1,7 +1,7 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import {
   ChevronDownIcon,
-  LogInIcon,
+  LogOutIcon,
   MenuIcon,
   SearchIcon,
   ShoppingCartIcon,
@@ -20,6 +20,10 @@ import { Button } from '@presentation/components/ui/button'
 import { useCartCount } from '@presentation/hooks/use-cart'
 import { useSession } from '@presentation/hooks/use-session'
 import { lazyWithRetry } from '@presentation/lib/lazy-with-retry'
+import { cn } from '@presentation/lib/utils'
+
+/** Rotas da jornada de compra: "Mercado" ativo e cabeçalho sem linha inferior (Figma). */
+const MARKET_PATHS = ['/nfts/', '/carrinho', '/checkout', '/pedidos/']
 
 function CartLink() {
   const count = useCartCount()
@@ -49,7 +53,7 @@ function AccountAction() {
     return (
       <Button asChild size="sm" className="h-control gap-1 px-2.25 font-medium">
         <Link to="/login" search={href === '/' ? {} : { redirect: href }}>
-          <LogInIcon aria-hidden="true" />
+          <LogOutIcon aria-hidden="true" />
           Entrar
         </Link>
       </Button>
@@ -97,14 +101,23 @@ export function SiteHeader() {
   const [menuRequested, setMenuRequested] = useState(false)
   const menuButton = useRef<HTMLButtonElement>(null)
 
-  // Figma: Início ativo na home; Mercado ativo no catálogo e no detalhe do NFT.
-  const inMarket = pathname.startsWith('/nfts/') || (pathname === '/' && hash === CATALOG_ANCHOR)
-  const isActive = (item: NavItem) =>
-    item.kind === 'market' ? inMarket : item.kind === 'home' && pathname === '/' && !inMarket
+  // Figma: Mercado ativo no catálogo, no detalhe, no carrinho e no pagamento; Início no restante.
+  const inMarket =
+    MARKET_PATHS.some((prefix) => pathname.startsWith(prefix)) ||
+    (pathname === '/' && hash === CATALOG_ANCHOR)
+  const isActive = (item: NavItem) => (item.kind === 'market' ? inMarket : item.kind === 'home' && !inMarket)
+  // Linha inferior só na largura do conteúdo e só onde o Figma a mostra (fora das telas de compra).
+  const showRule = !inMarket
 
   return (
-    <header className="hidden border-b border-primary/40 md:block">
-      <div className="mx-auto flex h-search w-full max-w-content items-start justify-between gap-6 px-6 lg:px-10 xl:px-0">
+    <header className="hidden md:block">
+      <div
+        className={cn(
+          'mx-auto flex h-search w-full max-w-content items-start justify-between gap-6 px-6 lg:px-10 xl:px-0',
+          'border-b',
+          showRule ? 'border-primary/25' : 'border-transparent',
+        )}
+      >
         <div className="flex h-full w-40 items-center">
           <BrandLogo />
         </div>
@@ -119,21 +132,23 @@ export function SiteHeader() {
           </ul>
         </nav>
 
-        <div className="flex h-full items-center gap-7">
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={searchOpen ? 'Fechar busca' : 'Abrir busca'}
-            aria-expanded={searchOpen}
-            aria-controls="busca-cabecalho"
-            onClick={() => {
-              setSearchOpen((open) => !open)
-            }}
-            className="size-8"
-          >
-            {searchOpen ? <XIcon aria-hidden="true" /> : <SearchIcon aria-hidden="true" />}
-          </Button>
-          <CartLink />
+        <div className="flex h-control items-center gap-7">
+          <div className="flex items-center gap-6.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={searchOpen ? 'Fechar busca' : 'Abrir busca'}
+              aria-expanded={searchOpen}
+              aria-controls="busca-cabecalho"
+              onClick={() => {
+                setSearchOpen((open) => !open)
+              }}
+              className="size-5.5 [&_svg:not([class*='size-'])]:size-5.5"
+            >
+              {searchOpen ? <XIcon aria-hidden="true" /> : <SearchIcon aria-hidden="true" />}
+            </Button>
+            <CartLink />
+          </div>
           <AccountAction />
 
           <Button

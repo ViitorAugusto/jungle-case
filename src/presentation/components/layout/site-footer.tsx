@@ -1,5 +1,6 @@
-import { useId, type SyntheticEvent } from 'react'
+import { Fragment, useId, type SyntheticEvent } from 'react'
 import { notify } from '@presentation/lib/notify'
+import { cn } from '@presentation/lib/utils'
 
 import { BrandLogo } from '@presentation/components/layout/brand-logo'
 import {
@@ -47,6 +48,8 @@ const linkColumns = [
   { title: 'Coleções', items: ['Arte digital', 'Fotografia', 'Música', 'Arte 3D', 'Utilidade'] },
 ] as const
 
+const wallets = ['METAMASK', 'WALLETCONNECT', 'COINBASE'] as const
+
 const socials = [
   { label: 'Facebook', Icon: FacebookIcon },
   { label: 'Instagram', Icon: InstagramIcon },
@@ -63,7 +66,7 @@ function NewsletterForm() {
   }
 
   return (
-    <div className="flex flex-col gap-4 md:px-4">
+    <div className="flex flex-col gap-4 lg:pl-4.25">
       <h2 className="text-lead leading-compact font-bold text-foreground">
         Antecipe-se ao próximo lançamento
       </h2>
@@ -96,12 +99,12 @@ function NewsletterForm() {
 export function SiteFooter() {
   return (
     <footer className="mx-auto w-full max-w-content px-6 pb-24 md:px-10 md:pb-6 xl:px-0">
-      <div className="bg-surface-card p-6 md:p-8">
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-(--layout-footer-columns) lg:items-end lg:gap-7">
-          {features.map((feature) => (
+      <div className="bg-surface-card p-6 md:p-8 lg:pt-8 lg:pr-7.5 lg:pb-4 lg:pl-12">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-(--layout-footer-columns) lg:gap-0">
+          {features.map((feature, index) => (
             <section
               key={feature.mark}
-              className="flex flex-col gap-3 lg:border-r lg:border-primary lg:pb-1 lg:pl-4"
+              className={cn('flex flex-col gap-3.5 lg:border-r lg:border-primary', index > 0 && 'lg:pl-4.25')}
             >
               <span
                 aria-hidden="true"
@@ -109,7 +112,7 @@ export function SiteFooter() {
               >
                 {feature.mark}
               </span>
-              <h2 className="text-lead-sm font-bold text-foreground">{feature.title}</h2>
+              <h2 className="text-lead-sm font-bold whitespace-nowrap text-foreground">{feature.title}</h2>
               <p className="max-w-51 text-body-sm text-text-secondary">{feature.text}</p>
             </section>
           ))}
@@ -117,14 +120,14 @@ export function SiteFooter() {
         </div>
       </div>
 
-      <div className="grid gap-4 bg-surface-dark p-6 text-body-sm text-foreground sm:grid-cols-2 md:p-8 lg:grid-cols-4 lg:items-center lg:gap-23">
+      <div className="grid gap-4 bg-surface-dark p-6 text-body-sm text-foreground sm:grid-cols-2 md:p-8 lg:h-22 lg:grid-cols-4 lg:content-center lg:items-center lg:gap-19 lg:py-0">
         <BrandLogo asLink={false} />
         <p>Feito para colecionadores, criadores e cultura</p>
         <p>contato@email.com</p>
         <p>+55 11 4002 8922</p>
       </div>
 
-      <div className="grid gap-8 bg-surface-card p-6 sm:grid-cols-2 md:p-8 lg:grid-cols-4 lg:gap-31">
+      <div className="grid gap-8 bg-surface-card p-6 sm:grid-cols-2 md:p-8 lg:grid-cols-4 lg:gap-19">
         {linkColumns.map((column) => (
           <section key={column.title} className="flex flex-col gap-2">
             <h2 className="text-lead leading-4 font-bold text-foreground">{column.title}</h2>
@@ -138,22 +141,29 @@ export function SiteFooter() {
         <div className="flex flex-col gap-8">
           <section className="flex flex-col gap-5">
             <h2 className="text-lead leading-4 font-bold text-foreground">Redes sociais</h2>
-            <ul className="flex gap-2.5">
+            <ul className="flex gap-2">
               {socials.map(({ label, Icon }) => (
                 <li
                   key={label}
-                  className="flex size-7.5 items-center justify-center rounded-xs border border-primary text-primary"
+                  className="flex size-8 items-center justify-center rounded-xs border border-primary text-primary"
                 >
-                  <Icon className="size-4" />
+                  <Icon className="size-4.5" />
                   <span className="sr-only">{label}</span>
                 </li>
               ))}
             </ul>
           </section>
-          <section className="flex flex-col gap-3">
-            <h2 className="text-lead leading-4 font-bold text-foreground">Carteiras compatíveis</h2>
-            <p className="flex h-6.5 items-center justify-center rounded-sm border border-border-soft bg-surface-dark px-2 text-nano font-bold whitespace-nowrap text-text-accent">
-              METAMASK · WALLETCONNECT · COINBASE
+          <section className="flex flex-col gap-2.5">
+            <h2 className="text-lead leading-4 font-bold whitespace-nowrap text-foreground">
+              Carteiras compatíveis
+            </h2>
+            <p className="flex h-5.5 w-full items-center justify-between rounded-sm border border-border-soft bg-surface-dark px-2.5 text-nano font-bold whitespace-nowrap text-text-accent">
+              {wallets.map((wallet, index) => (
+                <Fragment key={wallet}>
+                  {index > 0 ? <span aria-hidden="true">·</span> : null}
+                  <span>{wallet}</span>
+                </Fragment>
+              ))}
             </p>
           </section>
         </div>

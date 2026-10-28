@@ -15,6 +15,7 @@ const twMerge = extendTailwindMerge({
         'heading-lg',
         'heading',
         'title',
+        'title-sm',
         'lead',
         'lead-sm',
         'body-lg',
@@ -28,8 +29,8 @@ const twMerge = extendTailwindMerge({
       radius: ['field', 'sheet'],
       shadow: ['field'],
       leading: ['compact', 'list'],
-      spacing: ['control', 'search', 'icon-sm'],
-      container: ['content', 'receipt', 'sidebar'],
+      spacing: ['control', 'search', 'icon-sm', 'field-lg', 'button-lg', 'ens-suffix'],
+      container: ['content', 'receipt', 'sidebar', 'auth-modal'],
     },
   },
 })

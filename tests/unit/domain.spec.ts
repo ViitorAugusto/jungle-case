@@ -67,6 +67,7 @@ test.describe('reconcileOrder', () => {
 const quoteLine = (overrides: Partial<QuoteLine> = {}): QuoteLine => ({
   nftId: 'nft-001',
   editionId: 'nft-001-std',
+  tokenId: '#0042',
   nftName: 'Emerald Ape #042',
   editionName: 'Padrão',
   imageUrl: '/a.svg',
@@ -81,7 +82,7 @@ const quote = (lines: QuoteLine[], overrides: Partial<Quote> = {}): Quote => ({
   id: 'qte_1',
   lines,
   coupon: null,
-  summary: { subtotalEth: '1.19', discountEth: '0', networkFeeEth: '0.0019', totalEth: '1.1919' },
+  summary: { subtotalEth: '1.19', discountEth: '0', networkFeeEth: '0.016', totalEth: '1.206' },
   createdAt: '2026-10-27T12:00:00.000Z',
   expiresAt: '2026-10-27T12:10:00.000Z',
   ...overrides,

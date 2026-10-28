@@ -2,12 +2,14 @@ import {
   catalogQueryParams as param,
   type CatalogFacetsDto,
   type NftDto,
+  type NftReviewsDto,
   type PageDto,
 } from '@adapters/http/contracts'
 
 import { db } from '@mocks/db/database'
 import { compareEth, isEth } from '@mocks/db/eth'
 import {
+  createFixtureReviews,
   fixtureCollections,
   fixtureNetworks,
   NEW_RELEASE_CUTOFF,
@@ -115,6 +117,15 @@ export const catalogHandlers = [
       })),
       priceRange: { minEth: prices[0] ?? '0', maxEth: prices.at(-1) ?? '0' },
     }
+    return commitJson(body)
+  }),
+
+  /** Avaliações de colecionadores: determinísticas por NFT, mais recentes primeiro. */
+  route('get', '/nfts/:id/reviews', ({ params }) => {
+    const nft = params.id ? db.findNft(params.id) : undefined
+    if (!nft) throw new ApiError(404, 'NFT_NOT_FOUND', 'NFT não encontrado')
+    const items = createFixtureReviews(nft).sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    const body: NftReviewsDto = { items, total: items.length }
     return commitJson(body)
   }),
 

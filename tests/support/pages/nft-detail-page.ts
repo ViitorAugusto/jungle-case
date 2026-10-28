@@ -35,7 +35,8 @@ export class NftDetailPage {
     this.quantity = page.getByRole('spinbutton', { name: 'Quantidade' })
     this.increaseQuantity = page.getByRole('button', { name: 'Aumentar quantidade' })
     this.decreaseQuantity = page.getByRole('button', { name: 'Diminuir quantidade' })
-    this.addToCart = page.getByRole('button', { name: 'Adicionar ao carrinho' })
+    // Figma: o ícone "Adicionar ao carrinho" só existe no mobile; no desktop "COMPRAR" adiciona (e leva ao carrinho).
+    this.addToCart = page.getByRole('button', { name: /^(Adicionar ao carrinho|Comprar NFT)$/ }).last()
     this.buy = page.getByRole('button', { name: 'Comprar NFT' })
     this.favorite = page.getByRole('button', { name: 'Favoritar' })
     this.notFound = page.getByRole('heading', { name: 'NFT não encontrado' })

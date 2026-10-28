@@ -12,7 +12,7 @@ export function HomeScreen() {
   const featured = useFeaturedNfts()
 
   return (
-    <div className="mx-auto flex w-full max-w-content flex-col gap-4 px-6 md:gap-24 md:px-10 xl:px-0">
+    <div className="mx-auto flex w-full max-w-content flex-col gap-4 px-6 pt-4 md:gap-24 md:px-10 md:pt-0 xl:px-0">
       <MobileCatalogBar />
       <HomeHero featured={featured.data} />
       <CatalogSection sideFeatured={featured.data?.[1] ?? featured.data?.[0]} />

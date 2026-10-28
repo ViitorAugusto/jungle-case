@@ -10,10 +10,10 @@ type FieldLabelProps = {
 /** Rótulo de campo; o "*" de obrigatório do Figma fica fora do nome acessível. */
 export function FieldLabel({ htmlFor, label, markRequired, hidden }: FieldLabelProps) {
   return (
-    <label htmlFor={htmlFor} className={cn('text-body-sm font-bold text-foreground', hidden && 'sr-only')}>
+    <label htmlFor={htmlFor} className={cn('text-body font-normal text-foreground', hidden && 'sr-only')}>
       {label}
       {markRequired ? (
-        <span aria-hidden="true" className="text-text-accent">
+        <span aria-hidden="true" className="text-text-coral">
           *
         </span>
       ) : null}

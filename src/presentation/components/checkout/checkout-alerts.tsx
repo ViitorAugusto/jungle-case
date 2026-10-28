@@ -55,39 +55,15 @@ function Notice({ role, tone, title, children, action }: NoticeProps) {
   )
 }
 
-/** Diferenças entre a cotação revisada e a revalidada: exige nova confirmação (R26). */
+/** Diferenças encontradas na revalidação antes de concluir: exigem nova confirmação (R26). */
 export function QuoteChangesAlert({ changes }: { readonly changes: readonly QuoteChange[] }) {
   return (
-    <Notice role="alert" tone="warning" title="Os valores do pedido mudaram. Confira e confirme de novo.">
+    <Notice role="alert" tone="warning" title="Os valores do pedido mudaram. Confira antes de confirmar.">
       <ul className="flex list-disc flex-col gap-1 pl-5">
         {changes.map((change, index) => (
           <li key={`${change.kind}-${index}`}>{describeChange(change)}</li>
         ))}
       </ul>
-    </Notice>
-  )
-}
-
-/** O carrinho mudou em tempo real depois da revisão: a cotação não vale mais (R63). */
-export function OutdatedQuoteAlert({
-  onReviewAgain,
-  busy,
-}: {
-  readonly onReviewAgain: () => void
-  readonly busy: boolean
-}) {
-  return (
-    <Notice
-      role="alert"
-      tone="warning"
-      title="Os valores do carrinho mudaram desde a revisão."
-      action={
-        <Button size="sm" onClick={onReviewAgain} disabled={busy} className="self-start">
-          Revisar novamente
-        </Button>
-      }
-    >
-      <p>Revise o pedido de novo para ver os valores atuais antes de confirmar.</p>
     </Notice>
   )
 }
@@ -157,7 +133,7 @@ export function OrderStatusNotice({ order }: { readonly order: Order }) {
       <Notice role="alert" tone="danger" title="Pagamento recusado.">
         <p>
           {order.rejectionReason ? `${order.rejectionReason} ` : null}
-          Seu carrinho foi mantido. Revise o pedido para tentar de novo.
+          Seu carrinho foi mantido. Confirme a compra para tentar de novo.
         </p>
       </Notice>
     )

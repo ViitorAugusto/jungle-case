@@ -2,31 +2,36 @@ import { Link, useRouter } from '@tanstack/react-router'
 import { ChevronLeftIcon, ShoppingCartIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-import type { CheckoutDraft, Wallet } from '@application/dtos'
+import { isWalletProvider, type CheckoutDraft, type Wallet } from '@application/dtos'
 
 import {
   CheckoutFailureAlert,
   OrderStatusNotice,
-  OutdatedQuoteAlert,
   QuoteChangesAlert,
   RecoveringOrderNotice,
 } from '@presentation/components/checkout/checkout-alerts'
 import { CollectorForm } from '@presentation/components/checkout/collector-form'
 import { PriceSummary } from '@presentation/components/checkout/price-summary'
 import { PurchaseLine } from '@presentation/components/checkout/purchase-line'
-import { WalletSelection } from '@presentation/components/checkout/wallet-selection'
+import { ProviderPicker, SavedWallets } from '@presentation/components/checkout/wallet-selection'
 import { CartChangesNotice } from '@presentation/components/cart/cart-changes-notice'
 import { StatePanel } from '@presentation/components/feedback/state-panel'
 import { Breadcrumb } from '@presentation/components/layout/breadcrumb'
 import { CATALOG_ANCHOR } from '@presentation/components/layout/nav-items'
 import { Button } from '@presentation/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+} from '@presentation/components/ui/dialog'
 import { EthValue } from '@presentation/components/ui/eth-value'
 import { Skeleton } from '@presentation/components/ui/skeleton'
 import { useWallets } from '@presentation/hooks/use-account'
 import { useCart, useCartChanges } from '@presentation/hooks/use-cart'
 import { useCheckoutFlow } from '@presentation/hooks/use-checkout-flow'
-import { networkLabelOf } from '@presentation/components/nft/network-labels'
-import { shortenHash } from '@presentation/lib/format'
+import { cn } from '@presentation/lib/utils'
 
 const breadcrumb = [
   { label: 'Início' },
@@ -34,22 +39,23 @@ const breadcrumb = [
   { label: 'Pagamento', current: true },
 ] as const
 
-/** Topo do mobile (Figma): voltar + "Pagamento com carteira". No desktop o título fica para leitores de tela. */
+/** Topo do mobile (Figma): voltar circular de 34 px + "Pagamento com carteira". No desktop, só para leitores de tela. */
 function CheckoutTitle() {
   const router = useRouter()
   return (
-    <div className="flex items-center gap-4">
+    <div className="mt-2.25 flex h-8.5 items-center gap-6.25 md:sr-only">
       <Button
         variant="icon-round"
+        size="icon"
         aria-label="Voltar"
         onClick={() => {
           router.history.back()
         }}
-        className="md:hidden"
+        className="size-8.5 rounded-full border-0 text-subtle md:hidden"
       >
-        <ChevronLeftIcon aria-hidden="true" />
+        <ChevronLeftIcon aria-hidden="true" className="size-icon-sm" />
       </Button>
-      <h1 className="text-title font-bold text-foreground md:sr-only">Pagamento com carteira</h1>
+      <h1 className="text-title-sm font-bold text-foreground">Pagamento com carteira</h1>
     </div>
   )
 }
@@ -60,7 +66,7 @@ function CheckoutSkeleton() {
     <div
       aria-busy="true"
       aria-label="Carregando pagamento"
-      className="grid gap-8 lg:grid-cols-(--layout-checkout-columns) lg:gap-16"
+      className="mt-7.5 grid gap-8 lg:grid-cols-(--layout-checkout-columns) lg:gap-8.25"
     >
       <div className="grid gap-5 md:grid-cols-2">
         <Skeleton className="h-8 w-64 md:col-span-2" />
@@ -88,37 +94,27 @@ const withWallet = (form: CheckoutDraft, wallet: Wallet): CheckoutDraft => ({
 })
 
 /**
- * Pagamento (Figma "Pagamento"): "Perfil do colecionador" à esquerda e "Seus
- * NFTs" à direita, com valores da cotação, carteira e provedor. O botão diz
- * "Revisar pedido" até haver cotação; na revisão o formulário e o resumo
- * travam, mudanças aparecem como alerta e o botão vira "Confirmar compra".
+ * Pagamento (Figma "Pagamento"). Desktop: "Perfil do colecionador" à esquerda
+ * e, à direita, "Seus NFTs", valores, "Carteira e rede" e um único "Confirmar
+ * compra". Mobile: só as carteiras ("Carteira conectada" e "Carteira e rede"),
+ * o total e o botão fixo; o formulário aparece quando falta algum dado.
+ * "Confirmar compra" conecta a carteira (R25), cota e revalida preço e
+ * estoque: se algo mudou, um diálogo mostra as mudanças antes de concluir.
  */
 export function CheckoutScreen() {
   const cart = useCart()
   const wallets = useWallets()
   const { changes: cartChanges, dismiss } = useCartChanges()
   const flow = useCheckoutFlow()
-  const { form, quote, order } = flow
+  const { form, quote, order, busy } = flow
 
   const registered = wallets.data ?? []
-  const reviewing = quote !== null
   const orderPending = order?.status === 'pending'
-  const orderRejected = order?.status === 'rejected'
-  const locked = reviewing || orderPending
   const walletLocked = Boolean(form && !form.useOtherWallet && form.payment.walletId)
-  // Provedor escolhido para a carteira cadastrada sem conexão ativa (ex.: recusada): não há o que revisar.
-  const chosenWallet = walletLocked
-    ? registered.find((wallet) => wallet.slot === form?.payment.walletId)
-    : undefined
-  const awaitingConnection = Boolean(
-    chosenWallet &&
-    form?.payment.provider &&
-    !(chosenWallet.connected && chosenWallet.provider === form.payment.provider),
-  )
+  const showFormOnMobile = Object.keys(flow.errors).length > 0
 
   const lines = quote?.lines ?? cart.data?.lines ?? []
   const summary = quote?.summary ?? cart.data?.summary
-  const busy = flow.isQuoting || flow.isSubmitting || orderPending
 
   if (!form || (!cart.data && !order)) {
     return (
@@ -126,6 +122,7 @@ export function CheckoutScreen() {
         {cart.isError || wallets.isError ? (
           <StatePanel
             role="alert"
+            className="mt-6"
             title={
               <p className="text-lead font-bold text-foreground">Não foi possível carregar o pagamento.</p>
             }
@@ -151,6 +148,7 @@ export function CheckoutScreen() {
     return (
       <Page>
         <StatePanel
+          className="mt-6"
           icon={<ShoppingCartIcon aria-hidden="true" className="size-10 text-text-accent" />}
           title={<h2 className="text-title font-bold text-foreground">Seu carrinho está vazio</h2>}
           description="Adicione NFTs ao carrinho para seguir para o pagamento."
@@ -166,6 +164,21 @@ export function CheckoutScreen() {
     )
   }
 
+  const selectedWallet = form.useOtherWallet
+    ? null
+    : (registered.find((wallet) => wallet.slot === form.payment.walletId) ?? null)
+
+  /** Conexão simulada (R25) quando a carteira ainda não está conectada pelo provedor escolhido. */
+  const connectIfNeeded = (wallet: Wallet, provider: string) => {
+    if (!isWalletProvider(provider) || (wallet.connected && wallet.provider === provider)) return
+    flow.connect(wallet.slot, provider).catch(() => undefined)
+  }
+
+  const selectWallet = (wallet: Wallet) => {
+    flow.update(withWallet(form, wallet), ['payment.address', 'payment.network', 'payment.provider'])
+    connectIfNeeded(wallet, form.payment.provider)
+  }
+
   const toggleOtherWallet = (checked: boolean) => {
     const primary = registered.find((wallet) => wallet.slot === 'primary') ?? registered[0]
     if (!checked && primary) {
@@ -177,162 +190,151 @@ export function CheckoutScreen() {
     ])
   }
 
-  const primaryAction = () => {
-    if (orderRejected) {
-      flow.startOver()
-      flow.review()
-      return
-    }
-    if (reviewing) flow.confirm()
-    else flow.review()
-  }
+  const providerErrors = flow.errors['payment.provider']
 
   return (
     <Page>
-      <CartChangesNotice changes={cartChanges} onDismiss={dismiss} />
+      <CartChangesNotice changes={cartChanges} onDismiss={dismiss} className="not-empty:mt-4" />
 
-      <div className="grid items-start gap-8 lg:grid-cols-(--layout-checkout-columns) lg:gap-16">
-        <div className="flex min-w-0 flex-col gap-4">
+      <div className="mt-5.75 grid items-start gap-x-8.25 gap-y-8 pb-28 md:mt-7.5 md:pb-0 lg:grid-cols-(--layout-checkout-columns)">
+        <div className={cn('min-w-0', !showFormOnMobile && 'max-md:hidden')}>
           <CollectorForm
             form={form}
             errors={flow.errors}
             onChange={flow.update}
             walletLocked={walletLocked}
             onToggleOtherWallet={toggleOtherWallet}
-            disabled={locked}
+            wallets={registered}
+            onSelectWallet={selectWallet}
+            disabled={orderPending}
           />
-          {reviewing && !orderPending ? (
-            <Button variant="link" onClick={flow.edit} className="self-start px-0">
-              Editar dados
-            </Button>
-          ) : null}
         </div>
 
-        <section
-          aria-labelledby="seus-nfts-titulo"
-          className="flex min-w-0 flex-col gap-6 rounded-lg bg-surface-card p-6 lg:sticky lg:top-6"
-        >
-          <h2 id="seus-nfts-titulo" className="text-title font-bold text-foreground">
-            Seus NFTs
-          </h2>
+        <div className="flex min-w-0 flex-col">
+          {registered.length > 0 ? (
+            <SavedWallets
+              wallets={registered}
+              value={selectedWallet?.slot ?? null}
+              onChange={selectWallet}
+              onDisconnect={flow.disconnect}
+              disabled={orderPending}
+              className="md:hidden"
+            />
+          ) : null}
 
-          <div>
+          <section aria-labelledby="seus-nfts-titulo" className="flex flex-col max-md:hidden">
+            <h2 id="seus-nfts-titulo" className="text-body-lg leading-5 font-bold text-foreground">
+              Seus NFTs
+            </h2>
             <div
               aria-hidden="true"
-              className="flex justify-between border-b border-border pb-3 text-body-sm font-bold text-text-secondary"
+              className="mt-2 flex justify-between border-b border-primary/25 pb-2 text-body-lg font-medium text-foreground"
             >
               <span>NFTs</span>
               <span>Subtotal</span>
             </div>
-            <ul aria-label="Itens do pedido" className="flex flex-col gap-4 pt-4">
+            <ul aria-label="Itens do pedido" className="mt-3 flex flex-col gap-3">
               {lines.map((line) => (
                 <PurchaseLine key={`${line.nftId}-${line.editionId}`} line={line} />
               ))}
             </ul>
-          </div>
 
-          {reviewing ? null : (
-            <p className="text-body-sm text-text-secondary">
+            <p className="mt-2.75 text-center text-body-sm leading-5 text-foreground">
               Tem um código promocional?{' '}
-              <Link
-                to="/carrinho"
-                className="rounded-xs text-text-accent underline-offset-4 focus-ring hover:underline"
-              >
+              <Link to="/carrinho" className="rounded-xs underline-offset-4 focus-ring hover:underline">
                 Aplique aqui
               </Link>
             </p>
-          )}
 
-          {summary ? <PriceSummary summary={summary} /> : null}
+            {summary ? <PriceSummary summary={summary} variant="checkout" className="mt-2" /> : null}
+          </section>
 
-          {reviewing ? (
-            <dl className="flex flex-col gap-2 rounded-sm border border-border p-4 text-body-sm">
-              <div className="flex justify-between gap-4">
-                <dt className="text-text-secondary">Colecionador</dt>
-                <dd className="truncate text-foreground">{form.collector.displayName}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt className="text-text-secondary">E-mail</dt>
-                <dd className="truncate text-foreground">{form.collector.email}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt className="text-text-secondary">Carteira</dt>
-                <dd className="text-foreground">
-                  {shortenHash(form.payment.address)}
-                  {networkLabelOf(form.payment.network) ? ` · ${networkLabelOf(form.payment.network)}` : null}
-                </dd>
-              </div>
-            </dl>
+          <ProviderPicker
+            form={form}
+            wallets={registered}
+            connection={flow.connection}
+            disabled={orderPending}
+            onSelectProvider={(provider) => {
+              flow.update({ ...form, payment: { ...form.payment, provider } }, ['payment.provider'])
+              if (selectedWallet) connectIfNeeded(selectedWallet, provider)
+            }}
+            onDisconnect={flow.disconnect}
+            className="mt-3.75 md:mt-1.75"
+          />
+          {providerErrors ? (
+            <p className="mt-3 flex items-start gap-1 text-small text-destructive-foreground">
+              <span aria-hidden="true" className="font-bold">
+                !
+              </span>
+              {providerErrors.join(' ')}
+            </p>
           ) : null}
 
-          <div className="flex flex-col gap-4">
-            <h3 className="text-lead font-bold text-foreground">Carteira e rede</h3>
-            <WalletSelection
-              form={form}
-              wallets={registered}
-              errors={flow.errors}
-              disabled={locked}
-              onSelectWallet={(wallet) => {
-                flow.update(withWallet(form, wallet), [
-                  'payment.address',
-                  'payment.network',
-                  'payment.provider',
-                ])
-              }}
-              onSelectProvider={(provider) => {
-                flow.update({ ...form, payment: { ...form.payment, provider } }, ['payment.provider'])
-              }}
-            />
-          </div>
+          {summary ? (
+            <p className="mt-3.5 flex items-center justify-end gap-7.5 text-lead font-bold md:hidden">
+              <span className="text-foreground">Total:</span>
+              <EthValue amount={summary.totalEth} className="text-text-accent" />
+            </p>
+          ) : null}
 
-          <div aria-live="polite" className="flex flex-col gap-3 empty:hidden">
+          <div aria-live="polite" className="mt-4 flex flex-col gap-3 empty:hidden">
             {flow.recovering ? <RecoveringOrderNotice /> : null}
             {order ? <OrderStatusNotice order={order} /> : null}
           </div>
-          {flow.changes.length > 0 ? <QuoteChangesAlert changes={flow.changes} /> : null}
           {flow.failure ? (
-            <CheckoutFailureAlert
-              failure={flow.failure}
-              onRetry={flow.retry}
-              onReviewAgain={flow.reviewAgain}
-              busy={busy}
-            />
+            <div className="mt-4">
+              <CheckoutFailureAlert
+                failure={flow.failure}
+                onRetry={flow.retry}
+                onReviewAgain={flow.reviewAgain}
+                busy={busy}
+              />
+            </div>
           ) : null}
 
-          <div className="flex flex-col gap-3 max-md:sticky max-md:bottom-0 max-md:-mx-6 max-md:-mb-6 max-md:rounded-t-sheet max-md:bg-surface-raised max-md:p-6">
-            {summary ? (
-              <p className="flex justify-between text-lead font-bold md:hidden">
-                <span className="text-foreground">Total:</span>
-                <EthValue amount={summary.totalEth} className="text-text-accent" />
-              </p>
-            ) : null}
-            {reviewing && flow.outdated && !orderPending ? (
-              <OutdatedQuoteAlert onReviewAgain={flow.reviewAgain} busy={busy} />
-            ) : (
-              <Button
-                onClick={primaryAction}
-                disabled={busy || (!reviewing && awaitingConnection)}
-                aria-busy={busy || undefined}
-                className="w-full rounded-full lg:rounded-sm"
-              >
-                {reviewing && !orderRejected ? 'Confirmar compra' : 'Revisar pedido'}
-              </Button>
-            )}
-            {!reviewing && awaitingConnection ? (
-              <p className="text-center text-small text-text-secondary">
-                Conecte a carteira para revisar o pedido.
-              </p>
-            ) : null}
+          <div className="fixed inset-x-0 bottom-0 z-30 px-7 pb-8 md:static md:mt-6.5 md:p-0">
+            <Button
+              onClick={flow.purchase}
+              disabled={busy}
+              aria-busy={busy || undefined}
+              className="h-15 w-full rounded-full bg-(image:--gradient-cta) md:h-11 md:rounded-xs md:bg-none md:text-body"
+            >
+              Confirmar compra
+            </Button>
           </div>
-        </section>
+        </div>
       </div>
+
+      <Dialog
+        open={flow.changes.length > 0}
+        onOpenChange={(open) => {
+          if (!open) flow.edit()
+        }}
+      >
+        <DialogContent className="max-w-md gap-5">
+          <DialogTitle className="text-lead font-bold">Revise as mudanças</DialogTitle>
+          <DialogDescription className="text-body-sm text-text-secondary">
+            Preço ou disponibilidade mudaram desde que você abriu o pagamento.
+          </DialogDescription>
+          <QuoteChangesAlert changes={flow.changes} />
+          {quote ? <PriceSummary summary={quote.summary} variant="checkout" /> : null}
+          <DialogFooter>
+            <Button variant="outline" onClick={flow.edit}>
+              Cancelar
+            </Button>
+            <Button onClick={flow.confirmChanges} disabled={busy}>
+              Confirmar compra
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Page>
   )
 }
 
 function Page({ children }: { readonly children: ReactNode }) {
   return (
-    <div className="mx-auto flex w-full max-w-content flex-col gap-6 px-6 md:gap-8 md:px-10 xl:px-0">
+    <div className="mx-auto flex w-full max-w-content flex-col px-7 md:px-10 xl:px-0">
       <Breadcrumb items={breadcrumb} />
       <CheckoutTitle />
       {children}

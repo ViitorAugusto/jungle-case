@@ -1,5 +1,5 @@
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { SlidersHorizontalIcon } from 'lucide-react'
+import { Settings2Icon } from 'lucide-react'
 import { useRef, useState } from 'react'
 
 import {
@@ -85,7 +85,7 @@ export function MobileCatalogBar() {
         }}
         className="size-search rounded-xl bg-linear-135 from-primary/45 to-primary p-3"
       >
-        <SlidersHorizontalIcon aria-hidden="true" className="size-5.5" />
+        <Settings2Icon aria-hidden="true" className="size-5.5" />
       </Button>
       {filtersRequested ? (
         <CatalogFiltersSheet.Component
@@ -135,7 +135,7 @@ export function CatalogSection({ sideFeatured }: CatalogSectionProps) {
           onValueChange={(next) => {
             if (isCatalogTab(next)) update({ tab: next === DEFAULT_CATALOG_TAB ? undefined : next })
           }}
-          className="min-w-0 gap-6 md:gap-8"
+          className="min-w-0 gap-4 md:gap-8"
         >
           <div className="flex flex-wrap items-center justify-between gap-4">
             <TabsList variant="line" aria-label="Seções do catálogo">

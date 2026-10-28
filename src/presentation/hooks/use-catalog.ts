@@ -20,6 +20,9 @@ export const useFeaturedNfts = () => useQuery(catalogQueries.featured())
 
 export const useCatalogFacets = () => useQuery(catalogQueries.facets())
 
+/** Aba "Avaliações de colecionadores (N)": itens mais recentes primeiro e `total`. */
+export const useNftReviews = (nftId: string) => useQuery(catalogQueries.reviews(nftId))
+
 /** Detalhe do NFT. `error.code === 'NOT_FOUND'` indica NFT inexistente. */
 export const useNft = (id: string) => {
   const queryClient = useQueryClient()

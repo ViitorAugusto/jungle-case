@@ -25,3 +25,9 @@ export const formatReceiptDate = (iso: string): string => {
   const date = new Date(iso)
   return `${date.getDate()} ${MONTHS[date.getMonth()] ?? ''}, ${date.getFullYear()}`
 }
+
+/** Nota média com 1 casa, como no selo do Figma: "4.8". */
+export const formatRating = (average: number): string => average.toFixed(1)
+
+/** Data de uma avaliação: "12 Set, 2026" (mesmo formato do recibo). */
+export const formatReviewDate = (iso: string): string => formatReceiptDate(iso)

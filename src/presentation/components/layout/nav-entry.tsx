@@ -16,7 +16,7 @@ export function NavEntry({
   onNavigate?: () => void
 }) {
   const underline = active ? (
-    <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.75 bg-primary" />
+    <span aria-hidden="true" className="absolute inset-x-0 -bottom-px h-0.75 bg-primary" />
   ) : null
 
   if (item.kind === 'soon') {
@@ -25,7 +25,7 @@ export function NavEntry({
         role="link"
         aria-disabled="true"
         title="Em breve"
-        className={cn(navLinkClass, 'cursor-not-allowed text-foreground/60')}
+        className={cn(navLinkClass, 'cursor-not-allowed text-foreground')}
       >
         {item.label}
         <span className="sr-only"> (em breve)</span>

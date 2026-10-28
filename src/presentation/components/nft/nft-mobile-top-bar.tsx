@@ -1,5 +1,5 @@
 import { useRouter } from '@tanstack/react-router'
-import { ArrowLeftIcon } from 'lucide-react'
+import { ChevronLeftIcon } from 'lucide-react'
 
 import type { Nft } from '@application/dtos'
 
@@ -11,7 +11,7 @@ export function NftMobileTopBar({ nft }: { readonly nft: Nft }) {
   const router = useRouter()
 
   return (
-    <div className="absolute inset-x-6 top-0 z-10 flex items-center justify-between md:hidden">
+    <div className="absolute inset-x-7 top-5.75 z-10 flex items-center justify-between md:hidden">
       <Button
         variant="icon-round"
         aria-label="Voltar"
@@ -19,7 +19,7 @@ export function NftMobileTopBar({ nft }: { readonly nft: Nft }) {
           router.history.back()
         }}
       >
-        <ArrowLeftIcon aria-hidden="true" />
+        <ChevronLeftIcon aria-hidden="true" className="size-4.5" />
       </Button>
       <FavoriteButton nft={nft} />
     </div>

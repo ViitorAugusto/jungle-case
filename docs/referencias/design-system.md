@@ -64,7 +64,7 @@ Sem frame mobile: Perfil, Carteiras e Confirmação (o enunciado exige que funci
 
 ### Logo (marcas de terceiros)
 
-Login social (Google, Facebook): o Figma não estava acessível na implementação; valem as cores oficiais publicadas pelas marcas, em tokens `--palette-brand-*` de `globals.css`:
+Login social (Google, Facebook): o "G" usa as cores oficiais do Google; o "f" do Facebook usa a cor medida nos PNGs exportados do Figma. Tokens `--palette-brand-*` de `globals.css`:
 
 | Token | Hex | Fonte |
 | --- | --- | --- |
@@ -72,7 +72,7 @@ Login social (Google, Facebook): o Figma não estava acessível na implementaç�
 | Google Green | `#34A853` | idem |
 | Google Yellow | `#FBBC05` | idem |
 | Google Red | `#EA4335` | idem |
-| Facebook | `#1877F2` | Meta brand resources |
+| Facebook | `#3B5999` | medido nos PNGs do Figma (ícone "f" do login) |
 
 Orange `#FF641A`, Blue, Light Blue e Indigo (logos de carteiras): ⚠️ conferir no Figma quando as carteiras forem implementadas.
 

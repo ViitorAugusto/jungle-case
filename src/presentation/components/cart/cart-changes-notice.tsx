@@ -24,12 +24,14 @@ const describe = (change: CartChange): string => {
 export function CartChangesNotice({
   changes,
   onDismiss,
+  className,
 }: {
   readonly changes: readonly CartChange[]
   readonly onDismiss: () => void
+  readonly className?: string
 }) {
   return (
-    <div role="status" aria-live="polite">
+    <div role="status" aria-live="polite" className={className}>
       {changes.length > 0 ? (
         <div className="flex items-start justify-between gap-3 rounded-sm border border-amber/60 bg-surface-dark px-4 py-3">
           <ul className="flex flex-col gap-1 text-body-sm text-foreground">

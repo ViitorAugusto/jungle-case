@@ -9,19 +9,20 @@ export type BreadcrumbItem = {
   readonly current?: boolean
 }
 
-/** Trilha do Figma (desktop), ex.: "Início / Mercado / Carrinho". Itens anteriores apontam para seções do Início. */
+/**
+ * Trilha do Figma (desktop), ex.: "Início / Mercado / Carrinho", toda em branco.
+ * Itens anteriores são links para seções do Início; o atual é texto com aria-current.
+ */
 export function Breadcrumb({ items }: { readonly items: readonly BreadcrumbItem[] }) {
   return (
     <nav aria-label="Trilha de navegação" className="hidden md:block">
-      <ol className="flex gap-1 text-body leading-4 font-bold text-foreground">
+      <ol className="flex gap-2.25 text-body leading-4 font-bold text-foreground">
         {items.map((item, index) => (
           <Fragment key={item.label}>
             {index > 0 ? <li aria-hidden="true">/</li> : null}
             <li>
               {item.current ? (
-                <span aria-current="page" className="text-text-accent">
-                  {item.label}
-                </span>
+                <span aria-current="page">{item.label}</span>
               ) : (
                 <Link
                   to="/"

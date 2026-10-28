@@ -9,15 +9,17 @@ import {
   type Order,
   type Quote,
   type QuoteChange,
+  isWalletProvider,
   type Wallet,
+  type WalletProvider,
+  type WalletSlot,
 } from '@application/dtos'
 
-import { useWallets } from '@presentation/hooks/use-account'
+import { useSetWalletConnection, useWallets } from '@presentation/hooks/use-account'
 import {
   useCheckoutDraft,
   useCreateQuote,
   useInitialCheckoutForm,
-  useIsQuoteOutdated,
   useOrder,
   usePendingCheckout,
   usePlaceOrder,
@@ -33,14 +35,20 @@ export type CheckoutFailure =
   | { readonly kind: 'retry'; readonly message: string }
   | { readonly kind: 'generic'; readonly message: string }
 
-const NOT_CONNECTED = 'Conecte a carteira pelo provedor escolhido'
-
-/** A carteira cadastrada escolhida precisa estar conectada pelo mesmo provedor (regra da API). */
-const connectionErrors = (form: CheckoutDraft, wallets: readonly Wallet[] | undefined): FormErrors => {
+/**
+ * Carteira cadastrada que precisa ser conectada (simulação, R25) pelo provedor
+ * escolhido antes de cotar; `null` quando já está conectada ou não se aplica
+ * ("Usar outra carteira?" não tem conexão).
+ */
+const pendingConnection = (
+  form: CheckoutDraft,
+  wallets: readonly Wallet[] | undefined,
+): { slot: Wallet['slot']; provider: NonNullable<Wallet['provider']> } | null => {
   const { walletId, provider } = form.payment
-  if (form.useOtherWallet || !walletId || !provider) return {}
+  if (form.useOtherWallet || !walletId || !isWalletProvider(provider)) return null
   const wallet = wallets?.find((candidate) => candidate.slot === walletId)
-  return wallet?.connected && wallet.provider === provider ? {} : { 'payment.provider': [NOT_CONNECTED] }
+  if (!wallet || (wallet.connected && wallet.provider === provider)) return null
+  return { slot: wallet.slot, provider }
 }
 
 /** Falha sem resposta: o pedido pode ter sido criado; reenviar com a mesma chave o recupera. */
@@ -69,11 +77,11 @@ const focusFirstInvalid = () => {
 }
 
 /**
- * Fluxo do Pagamento (premissa 23): editar → "Revisar pedido" (cotação) →
- * revisão travada → "Confirmar compra" (revalida; se algo mudou, mostra as
- * diferenças e pede nova confirmação) → pedido pendente até a simulação
- * decidir. Confirmado leva ao recibo; recusado volta à edição com o carrinho
- * intacto.
+ * Fluxo do Pagamento (premissa 23): um único "Confirmar compra" valida o
+ * formulário, conecta a carteira escolhida (simulação, R25), cota e revalida
+ * preço e disponibilidade. Sem diferença, envia; com diferença, mostra as
+ * mudanças e pede nova confirmação. O pedido fica pendente até a simulação
+ * decidir: confirmado leva ao recibo; recusado volta à edição com o carrinho intacto.
  */
 export const useCheckoutFlow = () => {
   const navigate = useNavigate()
@@ -84,6 +92,7 @@ export const useCheckoutFlow = () => {
   const createQuote = useCreateQuote()
   const revalidate = useRevalidateQuote()
   const placeOrder = usePlaceOrder()
+  const connection = useSetWalletConnection()
 
   const [edited, setEdited] = useState<CheckoutDraft | null>(null)
   const [errors, setErrors] = useState<FormErrors>({})
@@ -100,7 +109,12 @@ export const useCheckoutFlow = () => {
   const orderId = placedOrderId ?? resumed?.id ?? null
   const order = useOrder(orderId)
   const current: Order | null = order.data ?? resumed
-  const outdated = useIsQuoteOutdated(quote)
+  const busy =
+    createQuote.isPending ||
+    revalidate.isPending ||
+    placeOrder.isPending ||
+    connection.isPending ||
+    current?.status === 'pending'
 
   useEffect(() => {
     if (current?.status === 'confirmed') {
@@ -132,22 +146,54 @@ export const useCheckoutFlow = () => {
     setFailure(failureOf(error))
   }
 
-  const requestQuote = () => {
-    setFailure(null)
-    setChanges([])
-    createQuote.mutate(undefined, { onSuccess: setQuote, onError: fail })
+  /** Conexão simulada da carteira cadastrada pelo provedor (R25). */
+  const connect = (slot: WalletSlot, provider: WalletProvider) => {
+    connection.reset()
+    return connection.mutateAsync({ slot, connected: true, provider })
   }
 
-  /** "Revisar pedido": valida o formulário e a conexão antes de cotar. */
-  const review = () => {
-    if (!form) return
-    const found = { ...validateCheckoutForm(form), ...connectionErrors(form, wallets.data) }
+  const disconnect = (slot: WalletSlot) => {
+    connection.reset()
+    connection.mutate({ slot, connected: false })
+  }
+
+  /** Cota e revalida em seguida: diferença abre a confirmação das mudanças; senão envia. */
+  const quoteAndSubmit = () => {
+    setFailure(null)
+    setChanges([])
+    createQuote.mutate(undefined, {
+      onSuccess: (created) => {
+        revalidate.mutate(created, {
+          onSuccess: (result) => {
+            setQuote(result.quote)
+            if (result.requiresConfirmation) setChanges(result.changes)
+            else submit(result.quote)
+          },
+          onError: fail,
+        })
+      },
+      onError: fail,
+    })
+  }
+
+  /** "Confirmar compra": valida, conecta se preciso e segue para cotação e envio. */
+  const purchase = () => {
+    if (!form || busy) return
+    if (current?.status === 'rejected') startOver()
+    const found = validateCheckoutForm(form)
     setErrors(found)
     if (Object.keys(found).length > 0) {
       focusFirstInvalid()
       return
     }
-    requestQuote()
+    const needed = pendingConnection(form, wallets.data)
+    if (!needed) {
+      quoteAndSubmit()
+      return
+    }
+    connect(needed.slot, needed.provider).then(quoteAndSubmit, () => {
+      // A recusa aparece no próprio bloco "Carteira e rede" (`connection.error`).
+    })
   }
 
   /**
@@ -178,24 +224,11 @@ export const useCheckoutFlow = () => {
     )
   }
 
-  /** "Confirmar compra": revalida; diferença trava o envio até nova confirmação. */
-  const confirm = () => {
-    if (!quote || placeOrder.isPending || revalidate.isPending) return
-    setFailure(null)
-    if (changes.length > 0) {
-      // O usuário já viu as diferenças desta cotação: confirmar agora é a nova confirmação.
-      setChanges([])
-      submit(quote)
-      return
-    }
-    revalidate.mutate(quote, {
-      onSuccess: (result) => {
-        setQuote(result.quote)
-        if (result.requiresConfirmation) setChanges(result.changes)
-        else submit(result.quote)
-      },
-      onError: fail,
-    })
+  /** Confirma de novo depois de ver as mudanças: envia com a cotação vigente. */
+  const confirmChanges = () => {
+    if (!quote || placeOrder.isPending) return
+    setChanges([])
+    submit(quote)
   }
 
   /** Mesma chamada (mesma chave de idempotência) depois de timeout ou queda. */
@@ -223,17 +256,18 @@ export const useCheckoutFlow = () => {
     update,
     quote,
     changes,
-    outdated,
     failure,
     recovering,
     order: current,
-    review,
-    confirm,
+    connection,
+    connect,
+    disconnect,
+    purchase,
+    confirmChanges,
     retry,
     edit,
     startOver,
-    reviewAgain: requestQuote,
-    isQuoting: createQuote.isPending,
-    isSubmitting: revalidate.isPending || placeOrder.isPending,
+    reviewAgain: purchase,
+    busy,
   }
 }

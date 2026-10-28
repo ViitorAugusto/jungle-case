@@ -28,6 +28,7 @@ const readAsDataUrl = (file: File) =>
  */
 export function AvatarField({ avatarUrl }: { readonly avatarUrl: string | null }) {
   const inputId = useId()
+  const hintId = useId()
   const update = useUpdateAvatar()
   const remove = useRemoveAvatar()
   const [preview, setPreview] = useState<string | null>(null)
@@ -69,9 +70,9 @@ export function AvatarField({ avatarUrl }: { readonly avatarUrl: string | null }
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <span className="text-body-sm font-bold text-foreground">Avatar</span>
-      <div className="flex items-center gap-4">
+    <div className="flex flex-col gap-2 md:-mt-1.75">
+      <span className="text-body leading-5 text-foreground">Avatar</span>
+      <div className="flex items-center gap-6">
         {shown ? (
           <img
             src={shown}
@@ -84,7 +85,7 @@ export function AvatarField({ avatarUrl }: { readonly avatarUrl: string | null }
           <span
             role="img"
             aria-label="Avatar"
-            className="flex size-12.5 items-center justify-center rounded-full bg-surface-raised text-text-secondary"
+            className="flex size-12.5 items-center justify-center rounded-full border border-border bg-surface-raised text-text-accent"
           >
             <ImageIcon aria-hidden="true" className="size-icon-sm" />
           </span>
@@ -94,6 +95,7 @@ export function AvatarField({ avatarUrl }: { readonly avatarUrl: string | null }
           type="file"
           accept={AVATAR_MIME_TYPES.join(',')}
           aria-label="Alterar avatar"
+          aria-describedby={hintId}
           disabled={busy}
           onChange={(event) => {
             void choose(event)
@@ -104,30 +106,35 @@ export function AvatarField({ avatarUrl }: { readonly avatarUrl: string | null }
           htmlFor={inputId}
           aria-hidden="true"
           className={cn(
-            buttonVariants({ size: 'sm' }),
+            buttonVariants(),
+            'h-10 w-24.5 rounded-xs px-0 text-body',
             'peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
           )}
         >
           Alterar
         </label>
-        {avatarUrl ? (
-          <Button
-            type="button"
-            variant="link"
-            size="sm"
-            aria-label="Remover avatar"
-            disabled={busy}
-            onClick={() => {
-              setError(null)
-              remove.mutate(undefined, { onError: fail })
-            }}
-            className="px-0"
-          >
-            Remover
-          </Button>
-        ) : null}
+        {/* Figma: "Remover" sempre visível; sem avatar fica indisponível (aria-disabled), sem aparentar efeito. */}
+        <Button
+          type="button"
+          variant="link"
+          size="sm"
+          aria-label="Remover avatar"
+          aria-disabled={avatarUrl ? undefined : true}
+          title={avatarUrl ? undefined : 'Sem avatar para remover'}
+          disabled={busy}
+          onClick={() => {
+            if (!avatarUrl) return
+            setError(null)
+            remove.mutate(undefined, { onError: fail })
+          }}
+          className="-ml-1.5 px-0 text-body font-normal text-foreground no-underline hover:text-text-accent aria-disabled:opacity-100"
+        >
+          Remover
+        </Button>
       </div>
-      <p className="text-small text-text-secondary">PNG, JPEG ou WebP, até 512 KB.</p>
+      <p id={hintId} className="sr-only">
+        PNG, JPEG ou WebP, até 512 KB.
+      </p>
       {error ? (
         <p role="alert" className="flex items-start gap-1 text-small text-destructive-foreground">
           <span aria-hidden="true" className="font-bold">

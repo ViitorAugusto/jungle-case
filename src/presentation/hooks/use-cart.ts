@@ -1,6 +1,7 @@
 import { useIsMutating, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
+  cartBadgeCount,
   diffCart,
   type AddCartItemInput,
   type Cart,
@@ -77,11 +78,11 @@ export const useApplyCoupon = () => useCartMutation((code: string) => cart.apply
 
 export const useRemoveCoupon = () => useCartMutation(() => cart.removeCoupon.execute())
 
-/** Total de unidades no carrinho (badge do cabeçalho). */
+/** Itens distintos no carrinho (badge do cabeçalho), não unidades. */
 export const useCartCount = (): number => {
   const { data = 0 } = useQuery({
     ...useCartQueryOptions(),
-    select: (current: Cart) => current.lines.reduce((total, line) => total + line.quantity, 0),
+    select: cartBadgeCount,
   })
   return data
 }

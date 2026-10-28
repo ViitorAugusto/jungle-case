@@ -12,6 +12,7 @@ export const queryKeys = {
   featured: ['catalog', 'featured'] as const,
   facets: ['catalog', 'facets'] as const,
   nft: (id: string) => ['catalog', 'nft', id] as const,
+  nftReviews: (nftId: string) => ['catalog', 'reviews', nftId] as const,
 
   /**
    * Chave de query privada desligada por falta de sessão. Fica fora de

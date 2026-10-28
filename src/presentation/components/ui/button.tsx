@@ -17,7 +17,7 @@ const buttonVariants = cva(
         link: 'text-text-accent underline-offset-4 hover:underline',
         /** Botão circular de ícone do Figma (voltar, favoritar): 35 px, Surface Raised com borda. */
         'icon-round':
-          'size-control rounded-full border border-border bg-surface-raised p-0 text-foreground hover:border-primary hover:text-text-accent',
+          'rounded-full border border-border bg-surface-raised p-0 text-foreground hover:border-primary hover:text-text-accent',
       },
       size: {
         default: 'h-10 px-7 text-body-lg',
@@ -29,6 +29,10 @@ const buttonVariants = cva(
         'icon-lg': 'size-11 rounded-lg',
       },
     },
+    compoundVariants: [
+      // Botão redondo do Figma (voltar, favoritar): círculo de 34 px; o tamanho padrão não vira pílula.
+      { variant: 'icon-round', size: 'default', class: 'size-8.5 px-0 text-body' },
+    ],
     defaultVariants: {
       variant: 'default',
       size: 'default',

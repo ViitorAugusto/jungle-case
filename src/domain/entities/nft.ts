@@ -12,9 +12,13 @@ export type NftEdition = {
   readonly priceEth: string
   /** Preço anterior exibido riscado quando houve redução (`null` sem promoção). */
   readonly compareAtPriceEth: string | null
-  readonly supply: number
+  /** Tiragem (o "50" de "1/50"); `null` = edição aberta, sem tiragem máxima. */
+  readonly supply: number | null
+  /** Estoque à venda agora (também na edição aberta). */
   readonly available: number
 }
+
+export const isOpenEdition = (edition: NftEdition): boolean => edition.supply === null
 
 /** Blockchain em que o NFT foi cunhado. */
 export const nftNetworks = ['ethereum', 'polygon', 'solana'] as const
@@ -33,13 +37,43 @@ export type NftCreator = {
   readonly avatarUrl: string
 }
 
+/** Raridade do token; `raro` ganha o selo "RARO" no card. */
+export type NftRarity = 'comum' | 'raro'
+
+export type NftRating = {
+  /** Média de 0 a 5, com 1 casa (ex.: 4.8). */
+  readonly average: number
+  readonly count: number
+}
+
+/** Procedência on-chain mostrada na aba "Detalhes do NFT". */
+export type NftProvenance = {
+  readonly contractAddress: string
+  readonly tokenStandard: string
+  readonly metadataStorage: string
+  /** Direitos autorais do criador nas vendas secundárias, em %. */
+  readonly royaltyPercent: number
+}
+
 export type Nft = {
   readonly id: string
   readonly name: string
+  /** "ID do token" exibido nos metadados, carrinho e recibo (ex.: `#0042`). */
+  readonly tokenId: string
+  /** Texto curto de "Sobre este NFT". */
+  readonly summary: string
+  /** Texto longo; parágrafos separados por linha em branco. */
   readonly description: string
+  /** Categoria do filtro "Coleções" e de "Mais desta coleção". */
   readonly collection: NftCollection
+  /** Série do contrato exibida em "Coleção:" nos metadados (ex.: Kurio Apes). */
+  readonly series: NftCollection
   readonly network: NftNetwork
   readonly creator: NftCreator
+  readonly attributes: readonly string[]
+  readonly rarity: NftRarity
+  readonly rating: NftRating
+  readonly provenance: NftProvenance
   readonly images: readonly NftImage[]
   readonly editions: readonly NftEdition[]
   readonly featured: boolean
@@ -52,6 +86,13 @@ export type Nft = {
 
 export const findEdition = (nft: Nft, editionId: string): NftEdition | undefined =>
   nft.editions.find((edition) => edition.id === editionId)
+
+/** Parágrafos da descrição longa (linhas em branco separam os parágrafos). */
+export const descriptionParagraphs = (nft: Pick<Nft, 'description'>): readonly string[] =>
+  nft.description
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
 
 export const isEditionAvailable = (edition: NftEdition): boolean => edition.available > 0
 

@@ -1,4 +1,4 @@
-import { useId, useState, type ReactNode } from 'react'
+import { useId, useRef, useState, type ReactNode } from 'react'
 
 import {
   copyPrimaryWalletProfile,
@@ -47,7 +47,12 @@ type WalletSectionProps = {
   readonly children: ReactNode
 }
 
-/** Seção de uma carteira: título do Figma, "Adicionar" à direita quando vazia. */
+/**
+ * Seção de uma carteira (Figma): direto na página, sem cartão. Título de 18 px
+ * com a descrição logo abaixo e, na mesma linha do título, o extra (secundária)
+ * e "Adicionar" à direita. Com o formulário aberto, "Adicionar" leva ao
+ * primeiro campo.
+ */
 function WalletSection({
   slot,
   description,
@@ -59,21 +64,34 @@ function WalletSection({
   children,
 }: WalletSectionProps) {
   const titleId = useId()
+  const sectionRef = useRef<HTMLElement>(null)
+  const handleAdd = () => {
+    if (open) sectionRef.current?.querySelector<HTMLElement>('input, button[role="combobox"]')?.focus()
+    else onAdd()
+  }
   return (
-    <section aria-labelledby={titleId} className="flex flex-col gap-5 rounded-lg bg-surface-card p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h2 id={titleId} className="text-title font-bold text-foreground">
-          {SLOT_TITLES[slot]}
-        </h2>
-        {open ? null : (
-          <Button variant="link" aria-label={addLabel} onClick={onAdd} className="px-0">
+    <section ref={sectionRef} aria-labelledby={titleId} className="flex flex-col">
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+        <div className="flex flex-col gap-1">
+          <h2 id={titleId} className="text-body-lg leading-5 font-bold text-foreground">
+            {SLOT_TITLES[slot]}
+          </h2>
+          {description ? <p className="text-body-sm text-text-secondary">{description}</p> : null}
+          {!open && emptyText ? <p className="text-body-sm text-text-secondary">{emptyText}</p> : null}
+        </div>
+        <div className="flex items-center gap-2">
+          {headerExtra}
+          <Button
+            variant="link"
+            aria-label={addLabel}
+            onClick={handleAdd}
+            className="h-auto px-0 text-body-lg"
+          >
             Adicionar
           </Button>
-        )}
+        </div>
       </div>
-      {description ? <p className="text-body-sm text-text-secondary">{description}</p> : null}
-      {headerExtra}
-      {open ? children : emptyText ? <p className="text-body-sm text-text-secondary">{emptyText}</p> : null}
+      {open ? <div className="mt-10">{children}</div> : null}
     </section>
   )
 }
@@ -138,7 +156,7 @@ export function WalletsScreen() {
     ) : !wallets.data || profile.isPending ? (
       <WalletsSkeleton />
     ) : (
-      <>
+      <div className="flex flex-col gap-10">
         <WalletSection
           slot="primary"
           description="Estas carteiras ficam disponíveis no pagamento e para receber NFTs comprados."
@@ -200,7 +218,7 @@ export function WalletsScreen() {
             }
           />
         </WalletSection>
-      </>
+      </div>
     )
 
   return (

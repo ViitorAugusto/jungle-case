@@ -7,7 +7,7 @@ import {
   type OrderDto,
 } from '@adapters/http/contracts'
 
-import { addEth, percentOfEth } from '@mocks/db/eth'
+import { addEth, percentOfEth, roundEth } from '@mocks/db/eth'
 import { db, type OrderRecord } from '@mocks/db/database'
 import { ApiError, commitJson, readJson, route, validationError } from '@mocks/http/respond'
 import { HANG_MS, scenarios } from '@mocks/scenarios/scenarios'
@@ -66,7 +66,7 @@ const raisePriceSilently = (nftId: string, editionId: string) => {
     ...nft,
     editions: nft.editions.map((edition) =>
       edition.id === editionId
-        ? { ...edition, priceEth: addEth(edition.priceEth, percentOfEth(edition.priceEth, 1_000)) }
+        ? { ...edition, priceEth: roundEth(addEth(edition.priceEth, percentOfEth(edition.priceEth, 1_000))) }
         : edition,
     ),
   }))

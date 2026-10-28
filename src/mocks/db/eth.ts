@@ -32,5 +32,13 @@ export const compareEth = (a: string, b: string) => {
   const diff = toWei(a) - toWei(b)
   return diff === 0n ? 0 : diff < 0n ? -1 : 1
 }
+/** Casas decimais dos valores monetários do Figma (ex.: 0.016, 26.846). */
+export const MONEY_DECIMALS = 3
+/** Arredonda (meio para cima) para `decimals` casas; valores do servidor saem com no máximo 3. */
+export const roundEth = (value: string, decimals = MONEY_DECIMALS) => {
+  const step = 10n ** BigInt(DECIMALS - decimals)
+  const wei = toWei(value)
+  return fromWei(((wei + step / 2n) / step) * step)
+}
 export const minEth = (a: string, b: string) => (compareEth(a, b) <= 0 ? a : b)
 export const subEth = (a: string, b: string) => fromWei(toWei(a) - toWei(b))

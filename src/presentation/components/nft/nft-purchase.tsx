@@ -17,8 +17,8 @@ type NftPurchaseProps = {
 }
 
 /**
- * "Comprar NFT" (adiciona e segue para o carrinho) e o botão de ícone
- * "Adicionar ao carrinho". A API revalida a disponibilidade; conflitos viram
+ * "Comprar NFT" (adiciona e segue para o carrinho) e, só no mobile como no
+ * Figma, o botão de ícone "Adicionar ao carrinho". A API revalida a disponibilidade; conflitos viram
  * toast com a mensagem dela.
  */
 export function NftPurchase({ nft, edition, quantity, className }: NftPurchaseProps) {
@@ -63,7 +63,7 @@ export function NftPurchase({ nft, edition, quantity, className }: NftPurchasePr
         onClick={() => {
           add(true)
         }}
-        className="h-15 flex-1 rounded-full bg-linear-95 from-primary to-primary/80 text-body-lg md:h-10 md:w-32.5 md:flex-none md:rounded-sm md:bg-none md:text-body-sm"
+        className="h-15 w-49 rounded-full bg-linear-95 from-primary to-primary-dark text-body-lg md:h-10 md:w-32.5 md:rounded-sm md:bg-none md:text-body-sm"
       >
         {soldOut ? (
           'Esgotado'
@@ -81,9 +81,9 @@ export function NftPurchase({ nft, edition, quantity, className }: NftPurchasePr
         onClick={() => {
           add(false)
         }}
-        className="size-15 rounded-full border border-border bg-surface-raised p-0 md:size-10 md:rounded-sm"
+        className="size-15 rounded-full border border-border bg-surface-raised p-0 md:hidden"
       >
-        <ShoppingCartIcon aria-hidden="true" />
+        <ShoppingCartIcon aria-hidden="true" className="size-4.5 text-subtle" />
       </Button>
     </div>
   )

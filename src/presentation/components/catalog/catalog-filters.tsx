@@ -59,6 +59,7 @@ export function CatalogFiltersPanel({ search, onChange, className }: CatalogFilt
           />
           <FacetList
             title="Rede"
+            countStyle="muted"
             options={facets.data.networks}
             selected={search.network ?? []}
             onToggle={(id, checked) => {

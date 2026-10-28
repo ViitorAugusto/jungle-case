@@ -6,6 +6,8 @@ export type CartLine = {
   readonly id: string
   readonly nftId: string
   readonly editionId: string
+  /** Número do token exibido como "ID do token" (ex.: `#0042`). */
+  readonly tokenId: string
   readonly nftName: string
   readonly editionName: string
   readonly imageUrl: string
@@ -45,6 +47,9 @@ export type CartChange =
 export const cartLineId = (nftId: string, editionId: string) => `${nftId}:${editionId}`
 
 export const isCartEmpty = (cart: Cart) => cart.lines.length === 0
+
+/** Contador do badge do carrinho: itens distintos (linhas), não unidades. */
+export const cartBadgeCount = (cart: Pick<Cart, 'lines'>) => cart.lines.length
 
 /** Linhas cuja quantidade passou do estoque atual (ex.: edição esgotou com o carrinho aberto). */
 export const linesOverAvailability = (cart: Cart): readonly CartLine[] =>

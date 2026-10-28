@@ -101,8 +101,12 @@ test.describe('formulários', () => {
 
   test('todo campo do login tem rótulo acessível', async ({ page, mock }) => {
     await mock.open(LoginPage.path)
+    // No desktop o login é um modal sobre a home (Figma); o fundo fica inerte, então só o formulário conta.
+    const form = page
+      .locator('form')
+      .filter({ has: page.getByRole('button', { name: 'Entrar', exact: true }) })
 
-    for (const field of await page.locator('input:not([type="hidden"])').all()) {
+    for (const field of await form.locator('input:not([type="hidden"])').all()) {
       await expect(field).toHaveAccessibleName(/.+/)
     }
   })

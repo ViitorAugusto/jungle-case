@@ -11,6 +11,8 @@ type FacetListProps = {
   readonly options: readonly FacetOption[]
   readonly selected: readonly string[]
   readonly onToggle: (id: string, checked: boolean) => void
+  /** Figma: contagem em negrito alinhada ao recuo (Coleções) ou regular encostada à direita (Rede). */
+  readonly countStyle?: 'strong' | 'muted'
 }
 
 /**
@@ -18,7 +20,7 @@ type FacetListProps = {
  * 40 px). Cada linha é um checkbox; o selecionado ganha a cor de destaque do
  * Figma e um ícone de check, para o estado não depender só da cor.
  */
-export function FacetList({ title, options, selected, onToggle }: FacetListProps) {
+export function FacetList({ title, options, selected, onToggle, countStyle = 'strong' }: FacetListProps) {
   const titleId = useId()
 
   return (
@@ -26,7 +28,7 @@ export function FacetList({ title, options, selected, onToggle }: FacetListProps
       <h3 id={titleId} className="text-lead leading-4 font-bold text-foreground">
         {title}
       </h3>
-      <ul className="flex flex-col px-3">
+      <ul className={cn('flex flex-col pl-3', countStyle === 'strong' ? 'pr-3' : 'pr-0')}>
         {options.map((option) => {
           const checked = selected.includes(option.id)
           const countId = `${titleId}-${option.id}`
@@ -50,7 +52,7 @@ export function FacetList({ title, options, selected, onToggle }: FacetListProps
                   </CheckboxPrimitive.Indicator>
                   {option.label}
                 </span>
-                <span id={countId} className="font-bold">
+                <span id={countId} className={countStyle === 'strong' ? 'font-bold' : 'font-normal'}>
                   <span className="sr-only">Quantidade: </span>({option.count})
                 </span>
               </CheckboxPrimitive.Root>

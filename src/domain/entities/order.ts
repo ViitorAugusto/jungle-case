@@ -8,6 +8,8 @@ export type OrderStatus = 'pending' | 'confirmed' | 'rejected'
 export type OrderLine = {
   readonly nftId: string
   readonly editionId: string
+  /** Número do token exibido como "ID do token" (ex.: `#0042`). */
+  readonly tokenId: string
   readonly nftName: string
   readonly editionName: string
   readonly imageUrl: string

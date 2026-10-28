@@ -1,6 +1,7 @@
 import type { AxiosInstance } from 'axios'
 
 import type { Nft } from '@domain/entities/nft'
+import type { NftReviews } from '@domain/entities/nft-review'
 
 import type { CatalogFacets, CatalogQuery, Page } from '@application/dtos/catalog'
 import { isApplicationError } from '@application/errors/application-error'
@@ -11,9 +12,10 @@ import {
   catalogQueryParams as param,
   type CatalogFacetsDto,
   type NftDto,
+  type NftReviewsDto,
   type PageDto,
 } from '@adapters/http/contracts'
-import { toFacets, toNft, toNftPage } from '@adapters/mappers/api.mapper'
+import { toFacets, toNft, toNftPage, toNftReviews } from '@adapters/mappers/api.mapper'
 
 const FEATURED_LIMIT = '6'
 
@@ -61,6 +63,16 @@ export class HttpCatalogGateway implements CatalogGateway {
     try {
       const { data } = await this.http.get<NftDto>(apiRoutes.nft(id), { ...options })
       return toNft(data)
+    } catch (error) {
+      if (isApplicationError(error) && error.code === 'NOT_FOUND') return null
+      throw error
+    }
+  }
+
+  async listReviews(nftId: string, options: RequestOptions = {}): Promise<NftReviews | null> {
+    try {
+      const { data } = await this.http.get<NftReviewsDto>(apiRoutes.nftReviews(nftId), { ...options })
+      return toNftReviews(data)
     } catch (error) {
       if (isApplicationError(error) && error.code === 'NOT_FOUND') return null
       throw error

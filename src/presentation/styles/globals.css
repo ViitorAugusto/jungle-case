@@ -28,6 +28,9 @@
   --palette-primary: #d28a4c;
   --palette-primary-light: #dd9a5f;
   --palette-primary-dark: #c47b3e;
+  /* Extremos dos degradês laranja dos botões mobile (medidos nos PNGs do Figma) */
+  --palette-primary-shade: #b57742;
+  --palette-primary-deep: #8a5a34;
   --palette-amber: #e3a44e;
   --palette-foreground: #f5f1eb;
   --palette-elevated: #fbfbfb;
@@ -46,12 +49,12 @@
   --palette-text-accent: #e89b55;
   --palette-text-coral: #f0805f;
 
-  /* Marcas de terceiros (login social): cores oficiais publicadas pelas marcas */
+  /* Marcas de terceiros (login social): cores do "G" oficial do Google; Facebook medido no Figma */
   --palette-brand-google-blue: #4285f4;
   --palette-brand-google-green: #34a853;
   --palette-brand-google-yellow: #fbbc05;
   --palette-brand-google-red: #ea4335;
-  --palette-brand-facebook: #1877f2;
+  --palette-brand-facebook: #3b5999;
 
   /* Papéis semânticos (shadcn/ui) */
   --background: var(--palette-ink);
@@ -79,16 +82,30 @@
   --radius: 6px;
 
   /* Grades de layout do Figma */
-  --layout-footer-columns: repeat(3, minmax(0, 1fr)) minmax(0, 357px);
+  /* Rodapé: colunas W/C/D com divisórias em x 417 / 683 / 949 do frame */
+  --layout-footer-columns: 249px 266px 266px minmax(0, 1fr);
   --layout-catalog-columns: 310px minmax(0, 1fr);
-  /* Margem lateral do conteúdo de 1200 px (alinha o painel de login ao botão Entrar) */
-  --layout-content-gutter: max(40px, calc((100vw - 1200px) / 2));
-  --layout-panel-max-height: calc(100dvh - 6rem);
+  /* Diário da Cunhagem: 4 cards de 268 px alinhados à esquerda (não ocupam os 1200 px) */
+  --layout-blog-columns: repeat(4, 268px);
+  /* Modal "Entrar | Criar conta" (Figma Desktop/Login): topo a 160 px e 600 px de altura mínima */
+  --layout-auth-modal-top: 160px;
+  --layout-auth-modal-max-height: calc(100dvh - var(--layout-auth-modal-top) - 16px);
+  --layout-auth-modal-min-height: min(600px, var(--layout-auth-modal-max-height));
   /* Carrinho e pagamento: conteúdo + coluna de resumo */
   --layout-cart-columns: minmax(0, 1fr) 332px;
-  --layout-cart-line: minmax(0, 1fr) 96px 132px 96px 40px;
+  /* Linha do carrinho (Figma): NFTs 311 · Preço 139 · Edições 136 · Total · remover 40 (+16 à direita) */
+  --layout-cart-line: 311px 139px 136px minmax(0, 1fr) 40px;
+  /* Resumo fixo do carrinho mobile (Figma: painel de y 554 a 896) */
+  --layout-cart-sheet-height: 342px;
+  /* Carrossel "Colecionadores também viram": 5 cards por página, 28 px entre eles */
+  --layout-carousel-item: calc((100% - 4 * 28px) / 5);
+
+  /* Degradês dos botões mobile: "Conectar e finalizar" escurece para a direita; "Aplicar" clareia */
+  --gradient-cta: linear-gradient(90deg, var(--palette-primary), var(--palette-primary-shade));
+  --gradient-apply: linear-gradient(90deg, var(--palette-primary-deep), var(--palette-primary));
   --layout-checkout-columns: minmax(0, 1fr) 405px;
-  --layout-choice-columns: repeat(auto-fit, minmax(180px, 1fr));
+  /* Recibo (Figma Confirmação): NFTs · Edições 92 · Subtotal 113 */
+  --layout-receipt-line: minmax(0, 1fr) 92px 113px;
 }
 
 @theme inline {
@@ -106,6 +123,8 @@
   --text-heading--line-height: 32px;
   --text-title: 22px;
   --text-title--line-height: 28px;
+  --text-title-sm: 20px;
+  --text-title-sm--line-height: 28px;
   --text-lead: 18px;
   --text-lead--line-height: 24px;
   --text-lead-sm: 17px;
@@ -143,6 +162,13 @@
   --spacing-control: 35px;
   --spacing-search: 45px;
   --spacing-icon-sm: 18px;
+  /* Select ".eth" do campo Nome ENS */
+  --spacing-ens-suffix: 78px;
+  /* Arte dos cards promocionais do Início */
+  --spacing-promo-art: 287px;
+  /* Login e cadastro mobile: campo de 50 px e botão de 58 px */
+  --spacing-field-lg: 50px;
+  --spacing-button-lg: 58px;
   --leading-compact: 18px;
   --leading-list: 30px;
 
@@ -152,6 +178,10 @@
   /* Card da Confirmação de Pedido (Figma: 578 px). */
   --container-receipt: 578px;
   --container-sidebar: 310px;
+  /* Arte ampliada pela lupa do detalhe */
+  --container-zoom: 640px;
+  /* Modal de login e cadastro (Figma: 500 px; a coluna do formulário tem 340 px) */
+  --container-auth-modal: 500px;
 
   --shadow-field: 0 0 20px rgb(10 6 4 / 0.45);
 
@@ -183,6 +213,8 @@
   --color-border-soft: var(--palette-border-soft);
   --color-primary-light: var(--palette-primary-light);
   --color-primary-dark: var(--palette-primary-dark);
+  --color-primary-shade: var(--palette-primary-shade);
+  --color-primary-deep: var(--palette-primary-deep);
   --color-amber: var(--palette-amber);
   --color-subtle: var(--palette-secondary);
   --color-elevated: var(--palette-elevated);
@@ -256,6 +288,19 @@
 @utility defer-render {
   content-visibility: auto;
   contain-intrinsic-size: auto var(--defer-render-estimate);
+}
+
+/*
+ * Tab bar mobile (Figma): recorte côncavo de 53 px de raio no topo, centrado,
+ * onde encaixa o botão central de 64 px.
+ */
+@utility tab-bar-notch {
+  --tab-bar-notch-radius: 53px;
+  mask-image: radial-gradient(
+    circle var(--tab-bar-notch-radius) at 50% -6px,
+    transparent calc(var(--tab-bar-notch-radius) - 0.5px),
+    #000 var(--tab-bar-notch-radius)
+  );
 }
 
 /* Foco visível único (R68): contorno de 2 px na cor de anel, afastado 2 px do elemento. */

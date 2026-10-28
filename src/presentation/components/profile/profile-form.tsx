@@ -129,9 +129,10 @@ export function ProfileForm({
       onSubmit={(event) => {
         void submit(event)
       }}
-      className="flex flex-col gap-8"
+      className="mt-8.5 flex flex-col gap-8"
     >
-      <div className="grid gap-x-7 gap-y-5 md:grid-cols-2">
+      {/* Figma: colunas de 417 px, passo de 103 px entre as linhas e 15 px do rótulo ao campo. */}
+      <div className="grid gap-x-7 gap-y-7 md:grid-cols-2 [&>*]:gap-3.75">
         <FormField
           label="Nome de exibição"
           markRequired
@@ -190,8 +191,8 @@ export function ProfileForm({
       </div>
 
       <div className="grid gap-x-7 md:grid-cols-2">
-        <section aria-labelledby="alterar-senha-titulo" className="flex flex-col gap-5">
-          <h2 id="alterar-senha-titulo" className="text-title font-bold text-foreground">
+        <section aria-labelledby="alterar-senha-titulo" className="flex flex-col gap-5.25 [&>div]:gap-2.5">
+          <h2 id="alterar-senha-titulo" className="text-body-lg leading-5 font-bold text-foreground">
             Alterar senha
           </h2>
           <PasswordField
@@ -207,6 +208,7 @@ export function ProfileForm({
             label="Nova senha"
             autoComplete="new-password"
             hint="Mínimo de 8 caracteres, com letras e números."
+            hideHint
             value={password.newPassword}
             errors={errors.newPassword}
             onChange={(event) => {
@@ -222,7 +224,12 @@ export function ProfileForm({
               setPasswordValue('confirmPassword', event.target.value)
             }}
           />
-          <Button type="submit" disabled={busy} aria-busy={busy || undefined} className="w-32.5 self-start">
+          <Button
+            type="submit"
+            disabled={busy}
+            aria-busy={busy || undefined}
+            className="mt-3 w-32.75 self-start rounded-xs px-0 text-body"
+          >
             Salvar
           </Button>
         </section>

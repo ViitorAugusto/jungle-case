@@ -5,6 +5,8 @@ import { EthAmount } from '@domain/value-objects/eth-amount'
 export type QuoteLine = {
   readonly nftId: string
   readonly editionId: string
+  /** Número do token exibido como "ID do token" (ex.: `#0042`). */
+  readonly tokenId: string
   readonly nftName: string
   readonly editionName: string
   readonly imageUrl: string

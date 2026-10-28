@@ -8,13 +8,13 @@ import type {
 } from '@adapters/http/contracts'
 
 import { db, type CartRecord } from '@mocks/db/database'
-import { addEth, minEth, mulEth, percentOfEth, subEth } from '@mocks/db/eth'
+import { addEth, minEth, mulEth, percentOfEth, roundEth, subEth } from '@mocks/db/eth'
 import { fixtureCoupons, type CouponRecord } from '@mocks/db/fixtures'
 import { ApiError } from '@mocks/http/respond'
 import { scenarios } from '@mocks/scenarios/scenarios'
 
-const BASE_NETWORK_FEE = '0.0015'
-const FEE_PER_UNIT = '0.0004'
+/** Taxa de rede estimada do Figma: fixa por pedido, independente da quantidade (0.016 ETH). */
+const NETWORK_FEE = '0.016'
 
 /** Linhas do carrinho com preço e estoque atuais (linhas de NFT/edição inexistentes são descartadas). */
 export const resolveLines = (cart: CartRecord): CartLineDto[] =>
@@ -27,6 +27,7 @@ export const resolveLines = (cart: CartRecord): CartLineDto[] =>
         id: `${line.nftId}:${line.editionId}`,
         nftId: nft.id,
         editionId: edition.id,
+        tokenId: nft.tokenId,
         nftName: nft.name,
         editionName: edition.name,
         imageUrl: nft.images[0]?.url ?? '',
@@ -70,12 +71,12 @@ const activeCoupon = (cart: CartRecord): CouponDto | null => {
 
 export const summarize = (lines: readonly QuoteLineDto[], coupon: CouponDto | null): PriceSummaryDto => {
   const subtotalEth = addEth('0', ...lines.map((line) => line.lineTotalEth))
-  const units = lines.reduce((total, line) => total + line.quantity, 0)
-  const networkFeeEth = units === 0 ? '0' : addEth(BASE_NETWORK_FEE, mulEth(FEE_PER_UNIT, units))
+  const networkFeeEth = lines.length === 0 ? '0' : NETWORK_FEE
+  // Desconto percentual arredondado a 3 casas, para o total seguir o formato do Figma.
   const rawDiscount = !coupon
     ? '0'
     : coupon.kind === 'percentage'
-      ? percentOfEth(subtotalEth, Number(coupon.value))
+      ? roundEth(percentOfEth(subtotalEth, Number(coupon.value)))
       : coupon.value
   const discountEth = minEth(rawDiscount, subtotalEth)
   const totalEth = addEth(subEth(subtotalEth, discountEth), networkFeeEth)
@@ -90,7 +91,7 @@ export const toCartDto = (cart: CartRecord): CartDto => {
     lines,
     coupon,
     summary: summarize(lines, coupon),
-    itemCount: lines.reduce((total, line) => total + line.quantity, 0),
+    itemCount: lines.length,
     version: cart.version,
   }
 }
@@ -117,6 +118,7 @@ export const firstUnavailableLine = (lines: readonly CartLineDto[]) =>
 export const toQuoteLine = (line: CartLineDto): QuoteLineDto => ({
   nftId: line.nftId,
   editionId: line.editionId,
+  tokenId: line.tokenId,
   nftName: line.nftName,
   editionName: line.editionName,
   imageUrl: line.imageUrl,
@@ -129,6 +131,7 @@ export const toQuoteLine = (line: CartLineDto): QuoteLineDto => ({
 export const toOrderLine = (line: QuoteLineDto): OrderLineDto => ({
   nftId: line.nftId,
   editionId: line.editionId,
+  tokenId: line.tokenId,
   nftName: line.nftName,
   editionName: line.editionName,
   imageUrl: line.imageUrl,

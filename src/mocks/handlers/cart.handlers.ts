@@ -8,7 +8,7 @@ import {
 } from '@adapters/http/contracts'
 
 import { db, type CartRecord } from '@mocks/db/database'
-import { addEth, percentOfEth } from '@mocks/db/eth'
+import { addEth, percentOfEth, roundEth } from '@mocks/db/eth'
 import { ApiError, commitJson, readJson, route } from '@mocks/http/respond'
 import { scenarios } from '@mocks/scenarios/scenarios'
 import { authenticate, bearerToken } from '@mocks/services/auth'
@@ -86,7 +86,10 @@ const schedulePriceChange = (nftId: string, editionId: string) => {
       ...nft,
       editions: nft.editions.map((edition) => {
         if (edition.id !== editionId) return edition
-        return { ...edition, priceEth: addEth(edition.priceEth, percentOfEth(edition.priceEth, 1_000)) }
+        return {
+          ...edition,
+          priceEth: roundEth(addEth(edition.priceEth, percentOfEth(edition.priceEth, 1_000))),
+        }
       }),
     }))
     if (!updated) return

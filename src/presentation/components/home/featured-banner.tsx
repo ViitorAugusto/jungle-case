@@ -12,11 +12,11 @@ export function FeaturedBanner({ nft }: { readonly nft: Nft | undefined }) {
       aria-labelledby="destaque-lateral"
       className="flex flex-col gap-4 bg-linear-to-b from-primary/10 to-primary/3 pt-6 pb-1"
     >
-      <div className="flex flex-col items-center gap-4 px-5 text-center">
+      <div className="flex flex-col gap-4 px-5">
         <h2 id="destaque-lateral" className="text-heading font-bold text-text-accent">
           NFT EM DESTAQUE
         </h2>
-        <p className="text-title leading-4 font-bold text-foreground">OFERTA LIMITADA</p>
+        <p className="text-center text-title leading-4 font-bold text-foreground">OFERTA LIMITADA</p>
       </div>
       {nft ? (
         <Link

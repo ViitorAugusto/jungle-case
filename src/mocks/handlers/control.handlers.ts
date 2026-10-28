@@ -2,6 +2,7 @@ import { http, HttpResponse, type HttpHandler } from 'msw'
 
 import { db } from '@mocks/db/database'
 import { isEth } from '@mocks/db/eth'
+import { standardEditionOf } from '@mocks/db/fixtures'
 import { readJson } from '@mocks/http/respond'
 import {
   parseScenarioId,
@@ -93,7 +94,7 @@ export const controlHandlers: HttpHandler[] = [
     )
     const nft = body.nftId ? db.findNft(body.nftId) : undefined
     if (!nft) return badRequest('NFT inexistente')
-    const editionId = body.editionId ?? nft.editions[0]?.id
+    const editionId = body.editionId ?? standardEditionOf(nft)?.id
     if (!nft.editions.some((edition) => edition.id === editionId)) return badRequest('Edição inexistente')
     if (body.priceEth !== undefined && !isEth(body.priceEth))
       return badRequest('priceEth deve ser string decimal')

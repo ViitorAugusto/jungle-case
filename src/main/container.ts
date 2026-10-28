@@ -9,6 +9,7 @@ import { UpdateCartItemUseCase } from '@application/use-cases/cart/update-cart-i
 import { GetCatalogFacetsUseCase } from '@application/use-cases/catalog/get-catalog-facets.use-case'
 import { GetNftUseCase } from '@application/use-cases/catalog/get-nft.use-case'
 import { ListFeaturedNftsUseCase } from '@application/use-cases/catalog/list-featured-nfts.use-case'
+import { ListNftReviewsUseCase } from '@application/use-cases/catalog/list-nft-reviews.use-case'
 import { ListNftsUseCase } from '@application/use-cases/catalog/list-nfts.use-case'
 import { CreateQuoteUseCase } from '@application/use-cases/checkout/create-quote.use-case'
 import { GetOrderUseCase } from '@application/use-cases/checkout/get-order.use-case'
@@ -115,6 +116,7 @@ const createContainer = () => {
       featured: new ListFeaturedNftsUseCase(catalog),
       facets: new GetCatalogFacetsUseCase(catalog),
       detail: new GetNftUseCase(catalog),
+      reviews: new ListNftReviewsUseCase(catalog),
     },
     favorites: {
       list: new ListFavoritesUseCase(favorites, sessionState),

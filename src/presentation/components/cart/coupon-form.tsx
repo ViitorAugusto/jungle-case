@@ -66,10 +66,11 @@ export function CouponForm({ coupon }: { readonly coupon: AppliedCoupon | null }
 
   return (
     <form noValidate onSubmit={submit} className="flex flex-col gap-2">
-      <label htmlFor={inputId} className="text-body-sm font-bold text-foreground">
+      <label htmlFor={inputId} className="text-body-sm leading-4 font-bold text-foreground max-md:sr-only">
         Código promocional
       </label>
-      <div className="flex h-10 items-stretch rounded-sm bg-surface-dark shadow-field">
+      {/* Figma: pílula de 50 px com "Aplicar" em degradê no mobile; contorno laranja de 40 px no desktop. */}
+      <div className="flex h-12.5 items-stretch rounded-full border border-border shadow-field md:h-10 md:rounded-xs md:border-primary md:shadow-none">
         <input
           id={inputId}
           name="coupon"
@@ -83,12 +84,12 @@ export function CouponForm({ coupon }: { readonly coupon: AppliedCoupon | null }
             setCode(event.target.value)
             if (apply.error) apply.reset()
           }}
-          className="min-w-0 flex-1 rounded-l-sm border border-r-0 border-transparent bg-transparent px-3 text-body-sm text-foreground focus-ring placeholder:text-subtle aria-invalid:border-destructive"
+          className="min-w-0 flex-1 rounded-l-full bg-transparent pl-4 text-caption text-foreground focus-ring placeholder:text-subtle aria-invalid:outline-destructive md:rounded-l-xs md:pl-2 md:text-small"
         />
         <button
           type="submit"
           disabled={apply.isPending}
-          className="cursor-pointer rounded-r-sm bg-primary px-4 text-body-sm font-bold text-primary-foreground focus-ring hover:bg-primary-light disabled:opacity-50"
+          className="-my-px -mr-px w-24.25 shrink-0 cursor-pointer rounded-full bg-(image:--gradient-apply) text-body-lg font-bold text-primary-foreground focus-ring hover:brightness-110 disabled:opacity-50 md:my-0 md:mr-0 md:w-25.25 md:rounded-none md:rounded-r-xs md:bg-primary md:bg-none md:text-body md:hover:bg-primary-light md:hover:brightness-100"
         >
           Aplicar
         </button>

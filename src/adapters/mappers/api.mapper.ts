@@ -1,6 +1,7 @@
 import type { Cart } from '@domain/entities/cart'
 import type { Favorite } from '@domain/entities/favorite'
 import type { Nft } from '@domain/entities/nft'
+import type { NftReviews } from '@domain/entities/nft-review'
 import type { Order } from '@domain/entities/order'
 import type { Profile } from '@domain/entities/profile'
 import type { Quote } from '@domain/entities/quote'
@@ -16,6 +17,7 @@ import type {
   CatalogFacetsDto,
   FavoriteDto,
   NftDto,
+  NftReviewsDto,
   OrderDto,
   PageDto,
   ProfileDto,
@@ -38,16 +40,28 @@ import {
 export const toNft = (dto: NftDto): Nft => ({
   id: dto.id,
   name: dto.name,
+  tokenId: dto.tokenId,
+  summary: dto.summary,
   description: dto.description,
   collection: { id: dto.collection.id, name: dto.collection.name },
+  series: { id: dto.series.id, name: dto.series.name },
   network: dto.network,
   creator: { name: dto.creator.name, avatarUrl: dto.creator.avatarUrl },
+  attributes: [...dto.attributes],
+  rarity: dto.rarity,
+  rating: { average: dto.rating.average, count: dto.rating.count },
+  provenance: { ...dto.provenance },
   images: dto.images.map((image) => ({ url: image.url, alt: image.alt })),
   editions: dto.editions.map((edition) => ({ ...edition })),
   featured: dto.featured,
   trendingScore: dto.trendingScore,
   createdAt: dto.createdAt,
   version: dto.version,
+})
+
+export const toNftReviews = (dto: NftReviewsDto): NftReviews => ({
+  items: dto.items.map((review) => ({ ...review, author: { ...review.author } })),
+  total: dto.total,
 })
 
 export const toNftPage = (dto: PageDto<NftDto>): Page<Nft> => ({ ...dto, items: dto.items.map(toNft) })

@@ -6,6 +6,7 @@ import { afterLoginPath, hasReason, isApplicationError, type AuthSearch } from '
 import { ForgotPasswordSoon, SocialLogin } from '@presentation/components/auth/social-login'
 import { FormField } from '@presentation/components/form/form-field'
 import { PasswordField } from '@presentation/components/form/password-field'
+import { authSubmitClass } from '@presentation/components/auth/auth-styles'
 import { Button } from '@presentation/components/ui/button'
 import { useLogin } from '@presentation/hooks/use-session'
 import { userMessageFor } from '@presentation/lib/errors'
@@ -45,11 +46,11 @@ export function LoginForm({ search }: { readonly search: AuthSearch }) {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col">
       {search.expired ? (
         <p
           role="status"
-          className="rounded-sm border border-amber/60 bg-surface-dark px-4 py-3 text-body-sm text-foreground"
+          className="mb-4 rounded-sm border border-amber/60 bg-surface-dark px-4 py-3 text-body-sm text-foreground"
         >
           Sua sessão expirou. Entre novamente para continuar de onde parou.
         </p>
@@ -57,15 +58,18 @@ export function LoginForm({ search }: { readonly search: AuthSearch }) {
       {formMessage ? (
         <p
           role="alert"
-          className="rounded-sm border border-destructive px-4 py-3 text-body-sm text-destructive-foreground"
+          className="mb-4 rounded-sm border border-destructive px-4 py-3 text-body-sm text-destructive-foreground"
         >
           {formMessage}
         </p>
       ) : null}
 
-      <form noValidate onSubmit={submit} className="flex flex-col gap-4">
+      <form noValidate onSubmit={submit} className="flex flex-col gap-3">
         <FormField
           label="E-mail"
+          hideLabel
+          variant="auth"
+          placeholder="contato@email.com"
           type="email"
           name="email"
           autoComplete="email"
@@ -79,6 +83,9 @@ export function LoginForm({ search }: { readonly search: AuthSearch }) {
         <PasswordField
           ref={passwordRef}
           label="Senha"
+          hideLabel
+          variant="auth"
+          placeholder="Senha"
           name="password"
           autoComplete="current-password"
           required
@@ -89,7 +96,12 @@ export function LoginForm({ search }: { readonly search: AuthSearch }) {
           errors={fieldErrors.password}
         />
         <ForgotPasswordSoon />
-        <Button type="submit" disabled={login.isPending} aria-busy={login.isPending} className="w-full">
+        <Button
+          type="submit"
+          disabled={login.isPending}
+          aria-busy={login.isPending}
+          className={authSubmitClass}
+        >
           Entrar
         </Button>
       </form>

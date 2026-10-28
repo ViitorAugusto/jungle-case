@@ -33,7 +33,8 @@ export class LoginPage {
     this.email = page.getByRole('textbox', { name: 'E-mail' })
     this.password = page.getByLabel('Senha', { exact: true })
     this.submit = page.getByRole('button', { name: 'Entrar', exact: true })
-    this.registerLink = page.getByRole('link', { name: 'Criar conta' })
+    // Aba "Criar conta" no modal desktop; "Crie uma conta" na tela mobile.
+    this.registerLink = page.getByRole('link', { name: /^(Criar conta|Crie uma conta)$/ })
     this.formError = page.getByRole('alert')
     this.expiredNotice = page.getByRole('status').filter({ hasText: 'Sua sessão expirou' })
   }
@@ -66,7 +67,8 @@ export class RegisterPage {
     this.email = page.getByRole('textbox', { name: 'E-mail' })
     this.password = page.getByLabel('Senha', { exact: true })
     this.confirmPassword = page.getByLabel('Confirmar senha')
-    this.submit = page.getByRole('button', { name: 'Criar conta' })
+    // "Criar conta" no modal desktop; "Criar perfil" na tela mobile (Figma).
+    this.submit = page.getByRole('button', { name: /^Criar (conta|perfil)$/ })
   }
 
   async registerWith(data: { name: string; email: string; password: string }): Promise<void> {

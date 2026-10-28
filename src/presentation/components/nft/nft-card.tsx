@@ -6,6 +6,7 @@ import { FavoriteButton } from '@presentation/components/nft/favorite-button'
 import { NftImage } from '@presentation/components/nft/nft-image'
 import { Badge } from '@presentation/components/ui/badge'
 import { EthValue } from '@presentation/components/ui/eth-value'
+import { cn } from '@presentation/lib/utils'
 
 type NftCardProps = {
   readonly nft: Nft
@@ -13,9 +14,11 @@ type NftCardProps = {
   readonly showFavorite?: boolean
   /** Card da primeira linha visível: arte sem lazy e com prioridade alta (LCP). */
   readonly priority?: boolean
+  /** `compact`: carrosséis ("Mais desta coleção"), com nome e preço mais próximos e preço em peso médio. */
+  readonly size?: 'default' | 'compact'
 }
 
-/** Preço anterior da edição mais barata disponível (exibido riscado, como no Figma). */
+/** Preço anterior da edição mais barata disponível (em cinza ao lado do atual, como no Figma). */
 const compareAtPrice = (nft: Nft, price: string | null): string | null =>
   nft.editions.find((edition) => edition.priceEth === price)?.compareAtPriceEth ?? null
 
@@ -25,7 +28,8 @@ const compareAtPrice = (nft: Nft, price: string | null): string | null =>
  * Desktop: moldura Surface Card 258×300 com a arte 250×250. Mobile: moldura
  * com gradiente, cantos de 20 px e favorito no canto da arte.
  */
-export function NftCard({ nft, showFavorite = true, priority = false }: NftCardProps) {
+export function NftCard({ nft, showFavorite = true, priority = false, size = 'default' }: NftCardProps) {
+  const compact = size === 'compact'
   const price = lowestPriceEth(nft)
   const previous = compareAtPrice(nft, price)
   const soldOut = isSoldOut(nft)
@@ -40,15 +44,23 @@ export function NftCard({ nft, showFavorite = true, priority = false }: NftCardP
           sizes="(min-width: 1280px) 250px, (min-width: 768px) 30vw, calc(50vw - 40px)"
           className="w-full rounded-xl transition-transform duration-300 group-hover:scale-102"
         />
-        {soldOut ? (
-          <Badge className="absolute top-3 left-0 rounded-none px-2 py-1.5 md:top-4">Esgotado</Badge>
+        {soldOut || nft.rarity === 'raro' ? (
+          <div className="absolute top-4 left-0 flex flex-col gap-1 md:top-4">
+            {/* Selo "RARO" do card mobile do Figma (o frame desktop não mostra selo). */}
+            {nft.rarity === 'raro' ? (
+              <Badge className="h-7.5 w-17 justify-start rounded-none px-2 py-0 font-bold md:hidden">
+                RARO
+              </Badge>
+            ) : null}
+            {soldOut ? <Badge className="rounded-none px-2 py-1.5">Esgotado</Badge> : null}
+          </div>
         ) : null}
         {showFavorite ? (
           <FavoriteButton nft={nft} className="absolute top-4 right-3 size-7 md:hidden" />
         ) : null}
       </div>
 
-      <div className="flex flex-col gap-1 pl-2 md:gap-3 md:pl-0">
+      <div className={cn('flex flex-col pl-2 md:pl-0', compact ? 'md:gap-0.5' : 'md:gap-3')}>
         <h3 className="truncate text-body text-foreground md:text-body-lg md:leading-4">
           <Link
             to="/nfts/$nftId"
@@ -58,10 +70,15 @@ export function NftCard({ nft, showFavorite = true, priority = false }: NftCardP
             {nft.name}
           </Link>
         </h3>
-        <p className="flex items-baseline gap-2 text-body-lg leading-4 font-bold text-text-accent md:text-lead md:leading-4">
+        <p
+          className={cn(
+            'flex items-baseline gap-2 text-body-lg leading-4 font-bold text-text-accent',
+            compact ? 'md:text-body md:font-medium' : 'md:text-lead md:leading-4',
+          )}
+        >
           {price ? <EthValue amount={price} /> : null}
           {previous ? (
-            <span className="font-normal text-subtle line-through">
+            <span className="font-normal text-subtle">
               <span className="sr-only">Preço anterior: </span>
               <EthValue amount={previous} />
             </span>

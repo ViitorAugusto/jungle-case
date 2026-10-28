@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 
 import { useSignOut } from '@presentation/hooks/use-sign-out'
+import { notify } from '@presentation/lib/notify'
 import { cn } from '@presentation/lib/utils'
 
 export type AccountSection = 'perfil' | 'carteiras'
@@ -26,7 +27,11 @@ type SidebarItem =
     }
   | { readonly kind: 'soon'; readonly label: string; readonly icon: LucideIcon }
 
-/** Itens do menu "Meu perfil" (Figma); fora do escopo ficam visíveis como "Em breve" (premissa 24). */
+/**
+ * Itens do menu "Meu perfil" (Figma). Os fora do escopo (premissa 24) têm o
+ * mesmo visual dos demais, como no frame; "Em breve" fica no nome acessível,
+ * na dica e num aviso ao clicar, sem aparentar que funcionam.
+ */
 const items: readonly SidebarItem[] = [
   { kind: 'link', label: 'Dados do perfil', icon: UserIcon, to: '/perfil', section: 'perfil' },
   { kind: 'link', label: 'Carteiras', icon: MapPinIcon, to: '/perfil/carteiras', section: 'carteiras' },
@@ -37,8 +42,9 @@ const items: readonly SidebarItem[] = [
   { kind: 'soon', label: 'Suporte', icon: CircleAlertIcon },
 ]
 
+/** Figma: passo de 45 px, ícone em x 18 e texto de 15 px laranja. */
 const itemClass =
-  'relative flex min-h-11 shrink-0 items-center gap-3 rounded-xs px-4 text-body-sm whitespace-nowrap focus-ring lg:pl-6'
+  'relative flex h-11.25 shrink-0 items-center gap-3 px-4.5 text-body whitespace-nowrap text-text-accent focus-ring'
 
 /**
  * Menu lateral "Meu perfil" (Figma Perfil e Carteiras): item ativo com a
@@ -49,25 +55,29 @@ export function AccountSidebar({ current }: { readonly current: AccountSection }
   const { signOut, isPending } = useSignOut()
 
   return (
-    <nav aria-labelledby="meu-perfil-titulo" className="min-w-0 rounded-lg bg-surface-card py-4 lg:py-6">
-      <h2 id="meu-perfil-titulo" className="px-4 pb-3 text-lead font-bold text-foreground lg:px-6">
+    <nav aria-labelledby="meu-perfil-titulo" className="min-w-0 bg-surface-card pt-3.5 pb-2">
+      <h2 id="meu-perfil-titulo" className="px-2.5 text-lead font-bold text-foreground">
         Meu perfil
       </h2>
-      <ul className="flex gap-1 overflow-x-auto px-2 lg:flex-col lg:overflow-visible lg:px-0">
+      <ul className="mt-1.5 flex overflow-x-auto lg:flex-col lg:overflow-visible">
         {items.map((item) => {
           const Icon = item.icon
           if (item.kind === 'soon') {
             return (
               <li key={item.label}>
-                <span
+                <button
+                  type="button"
                   aria-disabled="true"
                   title="Em breve"
-                  className={cn(itemClass, 'cursor-not-allowed text-text-accent/50')}
+                  onClick={() => {
+                    notify.info(`${item.label}: em breve.`)
+                  }}
+                  className={cn(itemClass, 'w-full cursor-not-allowed')}
                 >
                   <Icon aria-hidden="true" className="size-icon-sm" />
                   {item.label}
-                  <span className="text-micro font-bold text-text-secondary">Em breve</span>
-                </span>
+                  <span className="sr-only"> (Em breve)</span>
+                </button>
               </li>
             )
           }
@@ -77,16 +87,10 @@ export function AccountSidebar({ current }: { readonly current: AccountSection }
               <Link
                 to={item.to}
                 aria-current={active ? 'page' : undefined}
-                className={cn(
-                  itemClass,
-                  active ? 'font-bold text-text-accent' : 'text-text-accent hover:bg-surface-raised',
-                )}
+                className={cn(itemClass, active ? '' : 'hover:bg-surface-raised')}
               >
                 {active ? (
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-y-1 left-0 w-1.5 rounded-r-xs bg-primary"
-                  />
+                  <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1.5 bg-primary" />
                 ) : null}
                 <Icon aria-hidden="true" className="size-icon-sm" />
                 {item.label}
@@ -94,14 +98,14 @@ export function AccountSidebar({ current }: { readonly current: AccountSection }
             </li>
           )
         })}
-        <li className="lg:mt-2 lg:border-t lg:border-border lg:pt-2">
+        <li className="lg:border-t lg:border-border">
           <button
             type="button"
             onClick={signOut}
             disabled={isPending}
             className={cn(
               itemClass,
-              'w-full cursor-pointer text-foreground hover:bg-surface-raised disabled:opacity-50',
+              'h-10 w-full cursor-pointer gap-2 pl-2.5 font-bold hover:bg-surface-raised disabled:opacity-50',
             )}
           >
             <LogOutIcon aria-hidden="true" className="size-icon-sm" />

@@ -6,10 +6,21 @@ type BrandLogoProps = {
   readonly className?: string
   /** No rodapé a marca é só texto; no cabeçalho leva ao início. */
   readonly asLink?: boolean
+  /** `lg`: marca grande do topo do login e do cadastro mobile (Figma). */
+  readonly size?: 'default' | 'lg'
 }
 
-export function BrandLogo({ className, asLink = true }: BrandLogoProps) {
-  const wordmark = <span className="text-body-sm font-bold tracking-brand text-foreground">KURIO</span>
+export function BrandLogo({ className, asLink = true, size = 'default' }: BrandLogoProps) {
+  const wordmark = (
+    <span
+      className={cn(
+        'font-bold tracking-brand text-foreground',
+        size === 'lg' ? 'text-heading-xl' : 'text-body-sm',
+      )}
+    >
+      KURIO
+    </span>
+  )
   if (!asLink) return <span className={className}>{wordmark}</span>
 
   return (

@@ -32,6 +32,13 @@ export const catalogQueries = {
       staleTime: 5 * 60_000,
     }),
 
+  reviews: (nftId: string) =>
+    queryOptions({
+      queryKey: queryKeys.nftReviews(nftId),
+      queryFn: ({ signal }) => catalog.reviews.execute(nftId, { signal }),
+      staleTime: 5 * 60_000,
+    }),
+
   nft: (queryClient: QueryClient, id: string) =>
     queryOptions({
       queryKey: queryKeys.nft(id),

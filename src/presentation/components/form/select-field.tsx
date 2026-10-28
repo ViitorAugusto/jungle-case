@@ -12,6 +12,10 @@ import {
 
 export type SelectOption = { readonly value: string; readonly label: string }
 
+/** Gatilho com o mesmo contorno dos campos de texto (Figma: transparente, borda Border, 40 px). */
+export const selectFieldTriggerClass =
+  'w-full rounded-xs border-border bg-transparent px-3 text-body-sm text-foreground data-[placeholder]:text-subtle focus-visible:border-ring disabled:opacity-70 data-[size=default]:h-10 [&_svg]:text-foreground [&_svg]:opacity-100'
+
 type SelectFieldProps = {
   readonly label: string
   readonly placeholder: string
@@ -50,7 +54,7 @@ export function SelectField({
           {...(markRequired ? { 'aria-required': true } : {})}
           aria-invalid={invalid || undefined}
           {...(invalid ? { 'aria-describedby': errorId } : {})}
-          className="w-full rounded-sm border-input bg-surface-dark px-3 text-body-sm text-foreground focus-visible:border-ring disabled:opacity-70 data-[size=default]:h-10"
+          className={selectFieldTriggerClass}
         >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>

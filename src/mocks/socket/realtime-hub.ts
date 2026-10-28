@@ -6,6 +6,7 @@ import {
 } from '@adapters/socket/contracts'
 
 import { db } from '@mocks/db/database'
+import { standardEditionOf } from '@mocks/db/fixtures'
 
 type Connection = {
   readonly id: number
@@ -91,8 +92,8 @@ export const realtimeHub = {
     const stale: NftDto = {
       ...nft,
       version: Math.max(0, nft.version - 1),
-      editions: nft.editions.map((edition, index) =>
-        index === 0 ? { ...edition, priceEth: stalePriceEth } : edition,
+      editions: nft.editions.map((edition) =>
+        edition.id === standardEditionOf(nft)?.id ? { ...edition, priceEth: stalePriceEth } : edition,
       ),
     }
     const payload: NftUpdatedEventDto = {

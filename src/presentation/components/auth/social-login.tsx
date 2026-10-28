@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react'
 
+import { notify } from '@presentation/lib/notify'
+import { cn } from '@presentation/lib/utils'
+
 function GoogleMark() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="size-5">
@@ -23,10 +26,11 @@ function GoogleMark() {
   )
 }
 
+/** Só o "f", como no Figma (10 × 20 px). */
 function FacebookMark() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="size-5 fill-brand-facebook">
-      <path d="M24 12a12 12 0 1 0-13.9 11.9v-8.4H7.1V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4A12 12 0 0 0 24 12Z" />
+    <svg viewBox="0 0 10 20" aria-hidden="true" className="h-5 w-2.5 fill-brand-facebook">
+      <path d="M6.5 20v-9h3l.5-3.5H6.5V5.3c0-1 .3-1.7 1.8-1.7H10V.5C9.6.4 8.6.3 7.4.3 4.9.3 3.1 1.8 3.1 4.6v2.9H0V11h3.1v9h3.4Z" />
     </svg>
   )
 }
@@ -37,47 +41,54 @@ function SoonButton({ icon, label }: { icon: ReactNode; label: string }) {
       type="button"
       aria-disabled="true"
       title="Em breve"
-      className="flex h-10 flex-1 cursor-not-allowed items-center justify-center gap-2 rounded-sm border border-border bg-surface-dark text-body-sm font-medium text-foreground focus-ring"
+      onClick={() => {
+        notify.info(`${label}: em breve.`)
+      }}
+      className="flex h-10 w-full cursor-not-allowed items-center justify-center gap-3 rounded-sm border border-border bg-transparent text-caption font-medium text-text-secondary focus-ring md:rounded-xs"
     >
       {icon}
       {label}
-      <span className="rounded-xs bg-surface-raised px-1.5 text-nano font-bold text-text-secondary">
-        EM BREVE
-      </span>
+      <span className="sr-only"> (em breve)</span>
     </button>
   )
 }
 
 /**
  * "Ou continue com" Google/Facebook. Login social está fora do escopo (R12):
- * os botões ficam visíveis, desabilitados e marcados "Em breve".
+ * os botões ficam visíveis como no Figma, com `aria-disabled` e "Em breve" no
+ * nome acessível, na dica e no aviso ao clicar. No modal desktop o divisor
+ * ocupa a largura toda (sai da coluna de 340 px). O frame Desktop/Cadastro
+ * afasta mais os botões do divisor e entre si do que o Desktop/Login.
  */
-export function SocialLogin() {
+export function SocialLogin({ spacing = 'login' }: { readonly spacing?: 'login' | 'register' }) {
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-3 text-small text-text-secondary">
+    <div className="mt-10 flex flex-col md:mt-6">
+      <div className="flex items-center gap-3 text-caption text-foreground md:-mx-20">
         <span aria-hidden="true" className="h-px flex-1 bg-border" />
         Ou continue com
         <span aria-hidden="true" className="h-px flex-1 bg-border" />
       </div>
-      <div className="flex gap-3">
-        <SoonButton icon={<GoogleMark />} label="Google" />
-        <SoonButton icon={<FacebookMark />} label="Facebook" />
+      <div className={cn('mt-3.25 flex flex-col gap-4', spacing === 'register' ? 'md:mt-4.25' : 'md:gap-3')}>
+        <SoonButton icon={<GoogleMark />} label="Continuar com Google" />
+        <SoonButton icon={<FacebookMark />} label="Continuar com Facebook" />
       </div>
     </div>
   )
 }
 
-/** "Esqueceu a senha?" — recuperação de senha fora do escopo (R12). */
+/** "Esqueceu a senha?": recuperação de senha fora do escopo (R12). */
 export function ForgotPasswordSoon() {
   return (
     <button
       type="button"
       aria-disabled="true"
       title="Em breve"
-      className="cursor-not-allowed self-end rounded-xs text-small font-medium text-text-accent/70 focus-ring"
+      onClick={() => {
+        notify.info('Recuperação de senha: em breve.')
+      }}
+      className="cursor-not-allowed self-end rounded-xs text-body-sm/4 text-text-accent focus-ring"
     >
-      Esqueceu a senha? <span className="text-nano font-bold">(em breve)</span>
+      Esqueceu a senha?<span className="sr-only"> (em breve)</span>
     </button>
   )
 }

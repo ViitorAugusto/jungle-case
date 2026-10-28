@@ -1,12 +1,13 @@
 import { useId } from 'react'
 
-import { ORDER_NOTE_MAX_LENGTH, type CheckoutDraft } from '@application/dtos'
+import { ORDER_NOTE_MAX_LENGTH, type CheckoutDraft, type Wallet } from '@application/dtos'
 
 import { FieldError } from '@presentation/components/form/field-error'
 import { FieldLabel } from '@presentation/components/form/field-label'
 import { EnsField } from '@presentation/components/form/ens-field'
 import { FormField } from '@presentation/components/form/form-field'
 import { SelectField } from '@presentation/components/form/select-field'
+import { walletSlotLabels } from '@presentation/components/checkout/wallet-labels'
 import { networkOptions } from '@presentation/components/nft/network-labels'
 import { Checkbox } from '@presentation/components/ui/checkbox'
 import { Textarea } from '@presentation/components/ui/textarea'
@@ -22,6 +23,9 @@ type CollectorFormProps = {
   /** Endereço e rede vêm da carteira cadastrada escolhida: só leitura. */
   readonly walletLocked: boolean
   readonly onToggleOtherWallet: (checked: boolean) => void
+  /** Carteiras cadastradas: o select "Tipo de carteira" escolhe qual paga (Principal ou Reserva). */
+  readonly wallets: readonly Wallet[]
+  readonly onSelectWallet: (wallet: Wallet) => void
   /** Revisão em andamento: formulário travado. */
   readonly disabled: boolean
 }
@@ -30,9 +34,11 @@ type CollectorFormProps = {
 const UNLABELED_OFFSET = 'md:pt-7.5'
 
 /**
- * "Perfil do colecionador" (Figma Pagamento): dois campos por linha no
- * desktop, obrigatórios com "*" laranja, erros por campo vindos da validação
- * local ou da API (chaves `collector.*` e `payment.*`).
+ * "Perfil do colecionador" (Figma Pagamento): duas colunas de 369 px na ordem
+ * do frame (esquerda: exibição, Rede, Endereço, Tipo de carteira, E-mail;
+ * direita: usuário, perfil, ENS opcional, Código de indicação, Nome ENS),
+ * obrigatórios com "*" laranja e erros por campo vindos da validação local ou
+ * da API (chaves `collector.*` e `payment.*`).
  */
 export function CollectorForm({
   form,
@@ -40,6 +46,8 @@ export function CollectorForm({
   onChange,
   walletLocked,
   onToggleOtherWallet,
+  wallets,
+  onSelectWallet,
   disabled,
 }: CollectorFormProps) {
   const noteId = useId()
@@ -56,10 +64,10 @@ export function CollectorForm({
   const noteErrors = errorsOf('collector.note')
 
   return (
-    <fieldset disabled={disabled} className="flex min-w-0 flex-col gap-6" data-checkout-form>
-      <legend className="mb-6 text-heading font-bold text-foreground">Perfil do colecionador</legend>
+    <fieldset disabled={disabled} className="flex min-w-0 flex-col" data-checkout-form>
+      <legend className="text-body-lg leading-5 font-bold text-foreground">Perfil do colecionador</legend>
 
-      <div className="grid gap-x-6 gap-y-5 md:grid-cols-2">
+      <div className="mt-2.75 grid gap-x-6 gap-y-3.25 md:grid-cols-2">
         <FormField
           label="Nome de exibição"
           markRequired
@@ -136,16 +144,19 @@ export function CollectorForm({
           className={UNLABELED_OFFSET}
         />
 
-        <FormField
-          label="E-mail"
+        <SelectField
+          label="Tipo de carteira"
           markRequired
-          aria-required="true"
-          type="email"
-          autoComplete="email"
-          value={form.collector.email}
-          errors={errorsOf('collector.email')}
-          onChange={(event) => {
-            setCollector('email', event.target.value)
+          placeholder="Selecione uma carteira"
+          options={wallets.map((wallet) => ({
+            value: wallet.slot,
+            label: `${walletSlotLabels[wallet.slot]} · ${wallet.nickname}`,
+          }))}
+          value={form.useOtherWallet ? '' : (form.payment.walletId ?? '')}
+          disabled={disabled || form.useOtherWallet || wallets.length === 0}
+          onChange={(slot) => {
+            const wallet = wallets.find((candidate) => candidate.slot === slot)
+            if (wallet) onSelectWallet(wallet)
           }}
         />
         <FormField
@@ -161,6 +172,18 @@ export function CollectorForm({
           }}
         />
 
+        <FormField
+          label="E-mail"
+          markRequired
+          aria-required="true"
+          type="email"
+          autoComplete="email"
+          value={form.collector.email}
+          errors={errorsOf('collector.email')}
+          onChange={(event) => {
+            setCollector('email', event.target.value)
+          }}
+        />
         <EnsField
           markRequired
           aria-required="true"
@@ -172,25 +195,25 @@ export function CollectorForm({
         />
       </div>
 
-      <div className="flex items-center gap-3">
+      {/* Figma: círculo vazado laranja de 14 px; marcado, preenchido. */}
+      <div className="mt-6 flex items-center gap-2.25">
         <Checkbox
           id={otherWalletId}
           checked={form.useOtherWallet}
           onCheckedChange={(checked) => {
             onToggleOtherWallet(checked === true)
           }}
-          className="rounded-full"
+          className="size-3.5 rounded-full border-2 border-primary bg-transparent [&_svg]:hidden"
         />
-        <label htmlFor={otherWalletId} className="cursor-pointer text-body-sm text-foreground">
+        <label htmlFor={otherWalletId} className="cursor-pointer text-body-lg leading-5 text-foreground">
           Usar outra carteira?
         </label>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <FieldLabel htmlFor={noteId} label="Observação do colecionador (opcional)" hidden />
+      <div className="mt-5.25 flex flex-col gap-2.5 md:w-87.5">
+        <FieldLabel htmlFor={noteId} label="Observação do colecionador (opcional)" />
         <Textarea
           id={noteId}
-          placeholder="Observação do colecionador (opcional)"
           maxLength={ORDER_NOTE_MAX_LENGTH}
           aria-invalid={noteErrors ? true : undefined}
           {...(noteErrors ? { 'aria-describedby': noteErrorId } : {})}
@@ -198,7 +221,7 @@ export function CollectorForm({
           onChange={(event) => {
             setCollector('note', event.target.value)
           }}
-          className="min-h-32"
+          className="h-38 resize-none rounded-xs border-border bg-transparent"
         />
         {noteErrors ? <FieldError id={noteErrorId} errors={noteErrors} /> : null}
       </div>

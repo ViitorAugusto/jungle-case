@@ -4,7 +4,18 @@
  */
 export type { Cart, CartChange, CartLine } from '@domain/entities/cart'
 export type { Favorite } from '@domain/entities/favorite'
-export type { Nft, NftCollection, NftCreator, NftEdition, NftImage, NftNetwork } from '@domain/entities/nft'
+export type { NftReview, NftReviews } from '@domain/entities/nft-review'
+export type {
+  Nft,
+  NftCollection,
+  NftCreator,
+  NftEdition,
+  NftImage,
+  NftNetwork,
+  NftProvenance,
+  NftRarity,
+  NftRating,
+} from '@domain/entities/nft'
 export { nftNetworks } from '@domain/entities/nft'
 export type {
   Order,
@@ -22,13 +33,15 @@ export type { Session, User } from '@domain/entities/session'
 export type { Network, Wallet, WalletDraft, WalletSlot } from '@domain/entities/wallet'
 export { networks, walletSlots } from '@domain/entities/wallet'
 export {
+  descriptionParagraphs,
   findEdition,
   isEditionAvailable,
   isNewerVersion,
+  isOpenEdition,
   isSoldOut,
   lowestPriceEth,
 } from '@domain/entities/nft'
-export { diffCart, linesOverAvailability } from '@domain/entities/cart'
+export { cartBadgeCount, diffCart, linesOverAvailability } from '@domain/entities/cart'
 export { isConfirmed, isTerminalStatus, reconcileOrder } from '@domain/entities/order'
 export { isQuoteOutdated } from '@domain/entities/quote'
 export {
