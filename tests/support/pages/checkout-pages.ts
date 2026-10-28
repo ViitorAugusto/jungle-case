@@ -14,10 +14,13 @@ export type CollectorInput = {
 }
 
 /**
- * Pagamento (`/checkout`), textos do Figma (premissas 17 e 23). Nome de
- * exibição, e-mail, rede e endereço chegam pré-preenchidos do perfil e da
- * carteira principal; "Usar outra carteira?" libera rede e endereço. O tipo de
- * carteira são os cards de "Carteira e rede" e escolher um dispara a conexão.
+ * Pagamento (`/checkout`), textos do Figma (premissas 17 e 23). Desktop: o
+ * "Perfil do colecionador" chega pré-preenchido do perfil e da carteira
+ * principal ("Tipo de carteira" escolhe a carteira cadastrada; "Usar outra
+ * carteira?" libera rede e endereço). Mobile: só "Carteira conectada",
+ * "Carteira e rede", o total e o botão. Um único "Confirmar compra" conecta,
+ * cota, revalida e envia; se algo mudou, o diálogo "Revise as mudanças" pede
+ * nova confirmação.
  */
 export class CheckoutPage {
   static readonly path = '/checkout'
@@ -32,16 +35,19 @@ export class CheckoutPage {
   readonly secondaryWallet: Locator
   readonly note: Locator
   readonly networkSelect: Locator
+  /** Carteira cadastrada escolhida no formulário (desktop). */
+  readonly savedWalletSelect: Locator
+  /** Carteiras cadastradas em cards (mobile). */
   readonly savedWallets: Locator
   readonly useOtherWallet: Locator
   readonly walletTypes: Locator
-  readonly connectWallet: Locator
   readonly disconnectWallet: Locator
   readonly walletConnected: Locator
   readonly walletRejected: Locator
-  readonly review: Locator
-  readonly reviewRegion: Locator
+  readonly summaryRegion: Locator
   readonly confirm: Locator
+  readonly changesDialog: Locator
+  readonly confirmChanges: Locator
   readonly pending: Locator
   readonly rejected: Locator
   readonly quoteChanged: Locator
@@ -64,18 +70,17 @@ export class CheckoutPage {
     this.secondaryWallet = page.getByRole('textbox', { name: 'ENS ou carteira secundária (opcional)' })
     this.note = page.getByRole('textbox', { name: 'Observação do colecionador (opcional)' })
     this.networkSelect = page.getByRole('combobox', { name: 'Rede' })
-    // Carteiras cadastradas (Principal/Reserva), nos dois tamanhos; ausente sem carteira.
+    this.savedWalletSelect = page.getByRole('combobox', { name: 'Tipo de carteira' })
     this.savedWallets = page.getByRole('radiogroup', { name: 'Carteira conectada' })
     this.useOtherWallet = page.getByRole('checkbox', { name: 'Usar outra carteira?' })
-    this.walletTypes = page.getByRole('radiogroup', { name: 'Tipo de carteira' })
-    this.connectWallet = page.getByRole('button', { name: 'Conectar carteira' })
+    this.walletTypes = page.getByRole('radiogroup', { name: 'Carteira e rede' })
     this.disconnectWallet = page.getByRole('button', { name: 'Desconectar carteira' })
     this.walletConnected = page.getByRole('status').filter({ hasText: 'Carteira conectada' })
     this.walletRejected = page.getByRole('alert').filter({ hasText: 'Conexão recusada' })
-    this.review = page.getByRole('button', { name: 'Revisar pedido' })
-    // Na revisão o resumo "Seus NFTs" trava e mostra o que mudou (premissa 23).
-    this.reviewRegion = page.getByRole('region', { name: 'Seus NFTs' })
+    this.summaryRegion = page.getByRole('region', { name: 'Seus NFTs' })
     this.confirm = page.getByRole('button', { name: 'Confirmar compra' })
+    this.changesDialog = page.getByRole('dialog', { name: 'Revise as mudanças' })
+    this.confirmChanges = this.changesDialog.getByRole('button', { name: 'Confirmar compra' })
     this.pending = page.getByRole('status').filter({ hasText: 'Pagamento pendente' })
     this.rejected = page.getByRole('alert').filter({ hasText: 'Pagamento recusado' })
     this.quoteChanged = page.getByRole('alert').filter({ hasText: /mudou|mudaram|alterad/i })
@@ -88,8 +93,15 @@ export class CheckoutPage {
       .filter({ hasText: 'A confirmação demorou. Recuperando seu pedido' })
   }
 
+  /** Card de carteira cadastrada (mobile): "Principal, alexrocha.eth, …". */
   savedWallet(label: string | RegExp): Locator {
     return this.savedWallets.getByRole('radio', { name: label })
+  }
+
+  /** Escolhe a carteira cadastrada pelo apelido no select "Tipo de carteira" (desktop). */
+  async chooseSavedWallet(nickname: string) {
+    await this.savedWalletSelect.click()
+    await this.page.getByRole('option', { name: new RegExp(`· ${nickname}$`) }).click()
   }
 
   walletType(name: WalletProviderName): Locator {
@@ -97,22 +109,26 @@ export class CheckoutPage {
   }
 
   /**
-   * Completa o colecionador e escolhe o tipo de carteira. Com carteira cadastrada
-   * espera a conexão simulada; com "Usar outra carteira?" não há conexão (`connect: false`).
+   * Completa o colecionador (desktop; no mobile o formulário não aparece e os
+   * dados vêm do perfil) e escolhe o provedor. Trocar de provedor conecta a
+   * carteira cadastrada; com `connect` espera a conexão. Mantido o provedor
+   * salvo, a conexão acontece no "Confirmar compra".
    */
   async fillPayment(
     collector: CollectorInput,
     provider: WalletProviderName = 'MetaMask',
     { connect = true }: { connect?: boolean } = {},
   ) {
-    await this.username.fill(collector.username)
-    await this.profileName.fill(collector.profileName)
-    await this.ensName.fill(collector.ensLabel)
-    await this.referralCode.fill(collector.referralCode)
-    if (collector.note) await this.note.fill(collector.note)
-    // O cartão pode já vir marcado (provedor salvo na carteira) e desconectado: `check()` não clicaria.
+    if (await this.username.isVisible()) {
+      await this.username.fill(collector.username)
+      await this.profileName.fill(collector.profileName)
+      await this.ensName.fill(collector.ensLabel)
+      await this.referralCode.fill(collector.referralCode)
+      if (collector.note) await this.note.fill(collector.note)
+    }
     const card = this.walletType(provider)
-    if (!(await card.isChecked()) || !(await this.walletConnected.isVisible())) await card.click()
+    if (await card.isChecked()) return
+    await card.click()
     if (connect) await this.walletConnected.waitFor()
   }
 
@@ -124,7 +140,7 @@ export class CheckoutPage {
     await this.walletAddress.fill(address)
   }
 
-  /** "Confirmar compra" habilitado; some ou desabilita quando a cotação fica inválida. */
+  /** "Confirmar compra" habilitado; desabilita enquanto conecta, cota ou o pedido está pendente. */
   enabledConfirm(): Locator {
     return this.confirm.and(this.page.locator(':enabled'))
   }

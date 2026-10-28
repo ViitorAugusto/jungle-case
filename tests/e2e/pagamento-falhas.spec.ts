@@ -37,7 +37,6 @@ test.describe('falhas de pagamento', () => {
     await mock.setScenario({ scenario: 'payment-confirmed', paymentDelayMs: 500 })
     await cart.checkout.click()
     await checkout.fillPayment(collectorOf(testData.users.alex))
-    await apiAfter(page, 'quote', api.createQuote, () => checkout.review.click())
     const { body: order } = await apiAfter(page, 'order', api.createOrder, () => checkout.confirm.click())
 
     await page.waitForURL(ReceiptPage.path(order.id))

@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 
-import { api, apiAfter, type CartBody, type QuoteBody } from './api.ts'
+import { api, apiAfter, type CartBody } from './api.ts'
 import type { MockControl, MockOptions } from './mock-control.ts'
 import { CartPage } from './pages/cart-page.ts'
 import { CheckoutPage, type CollectorInput } from './pages/checkout-pages.ts'
@@ -44,15 +44,15 @@ export const collectorOf = (user: { name: string; email: string }): CollectorInp
 }
 
 /**
- * Leva o Alex do login até a revisão do pedido com um item no carrinho e
- * devolve o NFT, a edição e a cotação usada na revisão. O próximo passo é
- * `CheckoutPage.confirm`.
+ * Leva o Alex do login até o pagamento pronto, com um item no carrinho, e
+ * devolve o NFT e a edição. O próximo passo é `CheckoutPage.confirm`, que
+ * conecta, cota, revalida e envia.
  */
 export const prepareCheckout = async (
   page: Page,
   mock: MockControl,
   options: MockOptions & { nftId?: string; editionId?: string; quantity?: number } = {},
-): Promise<{ nft: NftBody; edition: NftBody['editions'][number]; quote: QuoteBody }> => {
+): Promise<{ nft: NftBody; edition: NftBody['editions'][number] }> => {
   const {
     nftId = testData.nfts.available.id,
     editionId = testData.nfts.available.editionId,
@@ -67,6 +67,5 @@ export const prepareCheckout = async (
   await new CartPage(page).checkout.click()
   const checkout = new CheckoutPage(page)
   await checkout.fillPayment(collectorOf(alex))
-  const { body: quote } = await apiAfter(page, 'quote', api.createQuote, () => checkout.review.click())
-  return { nft, edition, quote }
+  return { nft, edition }
 }

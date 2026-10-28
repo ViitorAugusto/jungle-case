@@ -10,6 +10,8 @@ export type CartLine = {
   readonly tokenId: string
   readonly nftName: string
   readonly editionName: string
+  /** Tiragem da edição (`null` = aberta), exibida como "1/50" ou "ABERTA". */
+  readonly editionSupply: number | null
   readonly imageUrl: string
   readonly unitPriceEth: string
   readonly quantity: number

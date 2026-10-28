@@ -42,6 +42,9 @@ const biaWallet = (overrides: Partial<WalletInput> = {}): WalletInput => ({
   ...overrides,
 })
 
+/** O frame mobile do Pagamento mostra só as carteiras em cards; o formulário é do desktop. */
+const isMobile = () => Boolean(test.info().project.use.isMobile)
+
 const openCheckoutWithItem = async (page: Page) => {
   await addToCartFromDetail(page, testData.nfts.available.id, testData.nfts.available.editionId)
   await page.goto(CheckoutPage.path)
@@ -234,7 +237,14 @@ test.describe('carteiras', () => {
 
     // No pagamento, escolher a secundária preenche rede e endereço (premissa 23).
     const checkout = await openCheckoutWithItem(page)
-    await checkout.savedWallet('Reserva').click()
+    if (isMobile()) {
+      const card = checkout.savedWallet(/^Reserva,/)
+      await card.click()
+      await expect(card).toBeChecked()
+      await expect(card).toHaveAccessibleName(/Solana/)
+      return
+    }
+    await checkout.chooseSavedWallet('Reserva')
     await expect(checkout.networkSelect).toContainText('Solana')
     await expect(checkout.walletAddress).toHaveValue(SOLANA_ADDRESS)
   })
@@ -272,7 +282,11 @@ test.describe('carteiras', () => {
     await expect(primary.networkSelect).toContainText('Polygon')
 
     const checkout = await openCheckoutWithItem(page)
-    await expect(checkout.savedWallet('Cofre Polygon')).toBeChecked()
+    if (isMobile()) {
+      await expect(checkout.savedWallet(/^Principal,.*Polygon/)).toBeChecked()
+      return
+    }
+    await expect(checkout.savedWalletSelect).toContainText('Cofre Polygon')
     await expect(checkout.networkSelect).toContainText('Polygon')
     await expect(checkout.networkSelect).toBeDisabled()
     await expect(checkout.walletAddress).toHaveValue(EVM_ADDRESS)
@@ -325,20 +339,24 @@ test.describe('carteiras', () => {
     await loginAs(page, mock, alex, '/', { scenario: 'wallet-rejected' })
     const checkout = await openCheckoutWithItem(page)
 
-    await checkout.walletType('MetaMask').click()
+    // Escolher outro provedor dispara a conexão simulada da carteira cadastrada (R25).
+    await checkout.walletType('Coinbase Wallet').click()
     await expect(checkout.walletRejected).toBeVisible()
     await expect(checkout.disconnectWallet).toBeHidden()
-    await expect(checkout.review).toBeDisabled()
 
     await mock.setScenario({ scenario: 'success' })
-    await checkout.connectWallet.click()
-    await expect(checkout.walletConnected).toBeVisible()
+    await checkout.walletType('WalletConnect').click()
+    await expect(checkout.walletConnected).toContainText('WalletConnect')
     await checkout.disconnectWallet.click()
-    await expect(checkout.connectWallet).toBeVisible()
+    await expect(checkout.disconnectWallet).toBeHidden()
   })
 })
 
 test.describe('pagamento: perfil do colecionador', () => {
+  test.beforeEach(() => {
+    test.skip(isMobile(), 'Formulário do colecionador só no desktop (Figma)')
+  })
+
   const openCheckout = async (page: Page, mock: MockControl, options?: MockOptions) => {
     await loginAs(page, mock, alex, '/', options)
     return openCheckoutWithItem(page)
@@ -352,7 +370,7 @@ test.describe('pagamento: perfil do colecionador', () => {
     await expect(checkout.email).toHaveValue(alex.email)
     await expect(checkout.ensName).toHaveValue(/^alexrocha/)
     await expect(checkout.referralCode).toHaveValue('JNG-2026')
-    await expect(checkout.savedWallet(alexPrimaryNickname)).toBeChecked()
+    await expect(checkout.savedWalletSelect).toContainText(alexPrimaryNickname)
     await expect(checkout.walletAddress).toHaveValue(alexPrimaryAddress)
     await expect(checkout.walletType('MetaMask')).toBeChecked()
   })
@@ -367,7 +385,7 @@ test.describe('pagamento: perfil do colecionador', () => {
     await checkout.referralCode.fill('123')
     await checkout.secondaryWallet.fill('nao-e-carteira')
     await checkout.note.fill('x'.repeat(281))
-    await checkout.review.click()
+    await checkout.confirm.click()
 
     for (const field of [
       checkout.username,
@@ -391,7 +409,7 @@ test.describe('pagamento: perfil do colecionador', () => {
     await checkout.fillPayment(collectorOf(alex))
     await checkout.displayName.fill('')
     await checkout.email.fill('alex@')
-    await checkout.review.click()
+    await checkout.confirm.click()
 
     await expect(checkout.displayName).toHaveAttribute('aria-invalid', 'true')
     await expect(checkout.email).toHaveAttribute('aria-invalid', 'true')
@@ -400,7 +418,6 @@ test.describe('pagamento: perfil do colecionador', () => {
   test('pedido recusado pela API (422) avisa e não fica pendente', async ({ page, mock }) => {
     const checkout = await openCheckout(page, mock)
     await checkout.fillPayment(collectorOf(alex))
-    await apiAfter(page, 'quote', api.createQuote, () => checkout.review.click())
     await mock.failNext({ method: 'POST', path: '/orders', status: 422, count: 1 })
 
     await apiAfter(page, 'error', api.createOrder, () => checkout.confirm.click())

@@ -36,6 +36,10 @@ export const prepareForScreenshot = async (page: Page): Promise<void> => {
   await page.waitForLoadState('networkidle')
   await page.evaluate(async () => {
     await document.fonts.ready
+    // Carrosséis rolam na horizontal: rolar a página não carrega as imagens lazy fora da tela.
+    for (const image of Array.from(document.images)) {
+      if (image.loading === 'lazy') image.loading = 'eager'
+    }
     await Promise.all(
       Array.from(document.images).map((image) =>
         image.complete

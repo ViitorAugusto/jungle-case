@@ -53,10 +53,14 @@ test.describe('teclado e foco', () => {
   test('edição e quantidade operáveis só pelo teclado no detalhe', async ({ page, mock }) => {
     const detail = new NftDetailPage(page)
     await mock.open(NftDetailPage.path(testData.nfts.available.id))
+    // Abre com a edição de maior tiragem limitada marcada ("1/50", Figma).
+    await expect(detail.edition('Padrão')).toBeChecked()
 
     // Setas movem a seleção no radiogroup (padrão ARIA): o radio focado fica marcado.
     await detail.edition('Padrão').focus()
     await page.keyboard.press('ArrowDown')
+    // O Radix move o foco no tick seguinte: espera sair de "Padrão" antes de conferir.
+    await expect(detail.edition('Padrão')).not.toBeFocused()
     await expect(detail.editions.locator(':focus')).toBeChecked()
 
     await detail.increaseQuantity.focus()

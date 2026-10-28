@@ -19,9 +19,12 @@ const collector = collectorOf(alex)
 const NOTE = 'Entregar na carteira principal'
 const OTHER_ADDRESS = '0x3333333333333333333333333333333333333333'
 const PAYMENT = { scenario: 'payment-confirmed', paymentDelayMs: 1_500 } as const
+/** O frame mobile do Pagamento mostra só as carteiras; o formulário completo é do desktop. */
+const FORM_ONLY_DESKTOP = 'Formulário do colecionador só no desktop (Figma)'
 
 test.describe('compra completa', () => {
   test('do catálogo ao recibo confirmado', async ({ page, mock }) => {
+    test.skip(Boolean(test.info().project.use.isMobile), FORM_ONLY_DESKTOP)
     const catalog = new CatalogPage(page)
     const detail = new NftDetailPage(page)
     const cart = new CartPage(page)
@@ -50,20 +53,15 @@ test.describe('compra completa', () => {
     await expect(page).toHaveURL(CheckoutPage.path)
     await expect(checkout.displayName).toHaveValue(alex.name)
     await expect(checkout.email).toHaveValue(alex.email)
-    await expect(checkout.savedWallet(alexPrimaryNickname)).toBeChecked()
+    await expect(checkout.savedWalletSelect).toContainText(alexPrimaryNickname)
     await expect(checkout.networkSelect).toContainText('Ethereum')
     await expect(checkout.walletAddress).toHaveValue(alexPrimaryAddress)
     await expect(checkout.walletAddress).not.toBeEditable()
-    await expect(checkout.confirm).toBeHidden()
     await checkout.fillPayment({ ...collector, note: NOTE })
-    await expect(checkout.disconnectWallet).toBeVisible()
+    await expect(checkout.summaryRegion).toContainText(nft.name)
 
-    // Revisão: cotação nova, resumo travado e só então "Confirmar compra"
-    await apiAfter(page, 'quote', api.createQuote, () => checkout.review.click())
-    await expect(checkout.reviewRegion).toContainText(nft.name)
-    await expect(checkout.review).toBeHidden()
-
-    // Envio: o pedido leva colecionador e carteira e nasce pendente (R29)
+    // Um único "Confirmar compra" conecta a carteira, cota, revalida e envia: o
+    // pedido leva colecionador e carteira e nasce pendente (R29)
     const { body: order } = await apiAfter(page, 'order', api.createOrder, () => checkout.confirm.click())
     expect(order.status).toBe('pending')
     expect(order.collector).toEqual({
@@ -109,6 +107,7 @@ test.describe('compra completa', () => {
     page,
     mock,
   }) => {
+    test.skip(Boolean(test.info().project.use.isMobile), FORM_ONLY_DESKTOP)
     const checkout = new CheckoutPage(page)
     const receipt = new ReceiptPage(page)
     const { available } = testData.nfts
@@ -117,11 +116,10 @@ test.describe('compra completa', () => {
     await page.goto(CheckoutPage.path)
 
     await checkout.useWallet('Ethereum', OTHER_ADDRESS)
-    await expect(checkout.savedWallet(alexPrimaryNickname)).not.toBeChecked()
+    await expect(checkout.savedWalletSelect).not.toContainText(alexPrimaryNickname)
     await checkout.secondaryWallet.fill('reserva.eth')
     await checkout.fillPayment(collector, 'Coinbase Wallet', { connect: false })
     await expect(checkout.walletType('Coinbase Wallet')).toBeChecked()
-    await apiAfter(page, 'quote', api.createQuote, () => checkout.review.click())
     const { body: order } = await apiAfter(page, 'order', api.createOrder, () => checkout.confirm.click())
 
     expect(order.payment).toMatchObject({

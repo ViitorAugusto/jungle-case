@@ -3,6 +3,7 @@ import { useId } from 'react'
 
 import { isEditionAvailable, isOpenEdition, type NftEdition } from '@application/dtos'
 
+import { editionTagOf } from '@presentation/components/nft/edition-tag'
 import { cn } from '@presentation/lib/utils'
 
 type EditionPickerProps = {
@@ -12,8 +13,7 @@ type EditionPickerProps = {
 }
 
 /** Tiragem exibida no chip: "1/50" ou "ABERTA" (edição sem limite). */
-const editionTag = (edition: NftEdition) =>
-  isOpenEdition(edition) ? 'ABERTA' : `1/${String(edition.supply)}`
+const editionTag = (edition: NftEdition) => editionTagOf(isOpenEdition(edition) ? null : edition.supply)
 
 /**
  * "Edição:" do Figma: chips de 24 px só com a tiragem (1/1, 1/10, 1/50, ABERTA),
@@ -43,6 +43,11 @@ export function EditionPicker({ editions, value, onChange }: EditionPickerProps)
               key={edition.id}
               value={edition.id}
               disabled={soldOut}
+              // Padrão ARIA do radiogroup: o radio focado fica marcado. O Radix move o
+              // foco num setTimeout e só marca se a seta ainda estiver pressionada.
+              onFocus={() => {
+                if (edition.id !== value) onChange(edition.id)
+              }}
               aria-label={`${edition.name} ${tag}${soldOut ? ', esgotada' : ''}`}
               className={cn(
                 'inline-flex h-6 cursor-pointer items-center rounded-full border border-border px-1.75 text-body-sm leading-4 text-text-secondary focus-ring hover:border-primary',

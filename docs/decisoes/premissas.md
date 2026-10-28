@@ -51,3 +51,5 @@ Itens marcados com ⚠️ ainda aguardam validação.
     - Avaliação em estrelas: estrelas cheias = parte inteira da média (4.8 mostra 4 cheias e 1 vazia, como no frame).
     - Thumbs do slider de preço: a posição das alças reflete a faixa aplicada. Com a faixa inteira, as alças ficam nas pontas, e não em x 162/344 como no frame, que mostra "0,02 - 12,30 ETH" com a alça máxima no meio do trilho.
     - Cards promocionais: o texto do 2º card fica limitado a 3 linhas, como no frame, que corta "cultura." sob o botão. O texto completo continua acessível.
+28. Detalhe abre com a edição limitada disponível de maior tiragem marcada ("1/50" no frame); sem ela, a primeira disponível. Nas edições, foco e seleção andam juntos (padrão ARIA do radiogroup): a seta move e marca. O carrinho mostra a tiragem ("Edição: 1/50"), que passa a vir na linha (`editionSupply`) do carrinho, da cotação e do pedido.
+29. Pagamento no mobile segue o frame: só carteiras, total e "Confirmar compra"; os dados do colecionador vêm do perfil, e o formulário aparece apenas quando algum campo precisa de correção. Os testes do formulário do colecionador rodam no desktop.

@@ -12,6 +12,8 @@ export type OrderLine = {
   readonly tokenId: string
   readonly nftName: string
   readonly editionName: string
+  /** Tiragem da edição (`null` = aberta). */
+  readonly editionSupply: number | null
   readonly imageUrl: string
   readonly unitPriceEth: string
   readonly quantity: number

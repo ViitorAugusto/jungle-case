@@ -70,6 +70,7 @@ const quoteLine = (overrides: Partial<QuoteLine> = {}): QuoteLine => ({
   tokenId: '#0042',
   nftName: 'Emerald Ape #042',
   editionName: 'Padrão',
+  editionSupply: 50,
   imageUrl: '/a.svg',
   unitPriceEth: '1.19',
   quantity: 1,

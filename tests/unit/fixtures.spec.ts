@@ -173,6 +173,7 @@ test.describe('resumo de preço no formato do Figma', () => {
     tokenId: '#0042',
     nftName: 'Emerald Ape #042',
     editionName: 'Padrão',
+    editionSupply: 50,
     imageUrl: '',
     unitPriceEth,
     quantity,

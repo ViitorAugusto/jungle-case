@@ -52,8 +52,9 @@ test.describe('regressão visual', () => {
     await loginAs(page, mock, testData.users.alex)
     await addToCartFromDetail(page, available.id, available.editionId)
     await page.goto(CheckoutPage.path)
-    await expect(checkout.displayName).toHaveValue(testData.users.alex.name)
-    await expect(checkout.reviewRegion).toContainText('Total')
+    // Desktop e mobile: carteira cadastrada e provedor salvos já escolhidos (o formulário é só do desktop).
+    await expect(checkout.walletType('MetaMask')).toBeChecked()
+    await expect(checkout.confirm).toBeEnabled()
     await prepareForScreenshot(page)
 
     await expect(page).toHaveScreenshot('pagamento.png', { fullPage: true })

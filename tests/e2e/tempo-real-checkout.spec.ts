@@ -1,4 +1,4 @@
-import { api, apiAfter } from '../support/api.ts'
+import { api, apiAfter, recordCalls } from '../support/api.ts'
 import { addToCartFromDetail, prepareCheckout } from '../support/flows.ts'
 import { CartPage } from '../support/pages/cart-page.ts'
 import { CatalogPage } from '../support/pages/catalog-page.ts'
@@ -82,34 +82,42 @@ test.describe('tempo real no catálogo, detalhe e carrinho', () => {
 })
 
 test.describe('tempo real durante o checkout', () => {
-  test('preço muda depois da cotação: confirmação bloqueada até revisar de novo', async ({ page, mock }) => {
+  test('preço muda depois da cotação: o diálogo mostra a mudança e pede nova confirmação', async ({
+    page,
+    mock,
+  }) => {
     const checkout = new CheckoutPage(page)
     const receipt = new ReceiptPage(page)
-    // `price-changed`: logo após a cotação, o preço do primeiro item sobe 10% via nft.updated.
-    const { quote } = await prepareCheckout(page, mock, { scenario: 'price-changed', paymentDelayMs: 500 })
+    await prepareCheckout(page, mock)
+    // `price-changed`: 1 s depois da cotação o preço do primeiro item sobe 10% (nft.updated).
+    // A latência de 1,5 s (aplicada depois do handler) faz a revalidação já ver o preço novo.
+    await mock.setScenario({ scenario: 'price-changed', latencyMs: 1_500, paymentDelayMs: 500 })
+    const orders = recordCalls(page, api.createOrder)
 
-    await expect(checkout.quoteChanged).toBeVisible()
-    await expect(checkout.enabledConfirm()).toHaveCount(0)
+    const { body: quote } = await apiAfter(page, 'quote', api.createQuote, () => checkout.confirm.click())
+    await expect(checkout.changesDialog).toBeVisible()
+    await expect(checkout.changesDialog.getByRole('alert')).toContainText(/mudou/)
+    expect(orders).toHaveLength(0)
 
-    const { body: fresh } = await apiAfter(page, 'quote', api.createQuote, () => checkout.reviewAgain.click())
-    expect(fresh.summary.totalEth).not.toBe(quote.summary.totalEth)
-    await expect(checkout.reviewRegion).toContainText(`${fresh.summary.totalEth} ETH`)
-    await expect(checkout.confirm).toBeEnabled()
-
-    const { body: order } = await apiAfter(page, 'order', api.createOrder, () => checkout.confirm.click())
-    expect(order.summary.totalEth).toBe(fresh.summary.totalEth)
+    const { body: order } = await apiAfter(page, 'order', api.createOrder, () =>
+      checkout.confirmChanges.click(),
+    )
+    expect(order.summary.totalEth).not.toBe(quote.summary.totalEth)
     await page.waitForURL(ReceiptPage.path(order.id))
     await expect(receipt.confirmed).toBeVisible()
   })
 
-  test('esgotou durante a revisão: aviso e compra bloqueada', async ({ page, mock }) => {
+  test('esgotou antes de confirmar: aviso e nenhum pedido', async ({ page, mock }) => {
     const checkout = new CheckoutPage(page)
     await prepareCheckout(page, mock)
+    const orders = recordCalls(page, api.createOrder)
 
     await mock.updateNft({ nftId: available.id, editionId: available.editionId, available: 0 })
+    await checkout.confirm.click()
 
-    await expect(checkout.quoteChanged.or(checkout.soldOut)).toBeVisible()
-    await expect(checkout.enabledConfirm()).toHaveCount(0)
+    await expect(checkout.soldOut.first()).toBeVisible()
+    await expect(checkout.pending).toBeHidden()
+    expect(orders).toHaveLength(0)
   })
 
   test('cotação desatualizada também é recusada pelo servidor', async ({ page, mock }) => {

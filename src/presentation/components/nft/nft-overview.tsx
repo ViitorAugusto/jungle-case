@@ -1,7 +1,7 @@
 import { StarIcon } from 'lucide-react'
 import { useState } from 'react'
 
-import { isEditionAvailable, type Nft } from '@application/dtos'
+import { isEditionAvailable, isOpenEdition, type Nft } from '@application/dtos'
 
 import { EditionPicker } from '@presentation/components/nft/edition-picker'
 import { FavoriteButton } from '@presentation/components/nft/favorite-button'
@@ -14,8 +14,20 @@ import { RatingStars } from '@presentation/components/nft/rating-stars'
 import { EthValue } from '@presentation/components/ui/eth-value'
 import { formatRating } from '@presentation/lib/format'
 
-/** Primeira edição disponível (ou a primeira, se tudo esgotou). */
-const defaultEditionId = (nft: Nft) => (nft.editions.find(isEditionAvailable) ?? nft.editions[0])?.id ?? ''
+/**
+ * Edição marcada ao abrir (Figma: "1/50"): a limitada disponível de maior
+ * tiragem; sem ela, a primeira disponível; tudo esgotado, a primeira.
+ */
+const defaultEditionId = (nft: Nft) => {
+  const available = nft.editions.filter(isEditionAvailable)
+  const limited = available
+    .filter((edition) => !isOpenEdition(edition))
+    .reduce<(typeof available)[number] | undefined>(
+      (best, edition) => (!best || (edition.supply ?? 0) > (best.supply ?? 0) ? edition : best),
+      undefined,
+    )
+  return (limited ?? available[0] ?? nft.editions[0])?.id ?? ''
+}
 
 const reviewsLabel = (count: number) =>
   count === 1 ? '1 avaliação de colecionador' : `${String(count)} avaliações de colecionadores`
@@ -89,6 +101,8 @@ export function NftOverview({ nft }: { readonly nft: Nft }) {
             editions={nft.editions}
             value={edition?.id ?? ''}
             onChange={(next) => {
+              // Foco e clique podem anunciar a mesma edição duas vezes: só a troca real zera a quantidade.
+              if (next === editionId) return
               setEditionId(next)
               setRequested(1)
             }}

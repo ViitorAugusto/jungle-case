@@ -4,6 +4,7 @@ import { TrashIcon } from 'lucide-react'
 import type { CartLine } from '@application/dtos'
 
 import { cartLineGrid } from '@presentation/components/cart/cart-layout'
+import { editionTagOf } from '@presentation/components/nft/edition-tag'
 import { NftImage } from '@presentation/components/nft/nft-image'
 import { QuantityStepper } from '@presentation/components/nft/quantity-stepper'
 import { Button } from '@presentation/components/ui/button'
@@ -63,7 +64,9 @@ export function CartLineItem({ line }: { readonly line: CartLine }) {
             </Link>
           </h3>
           <p className="hidden text-caption text-subtle md:mt-0.75 md:block">ID do token: {line.tokenId}</p>
-          <p className="mt-1 text-body-sm leading-4 text-subtle md:sr-only">Edição: {line.editionName}</p>
+          <p className="mt-1 text-body-sm leading-4 text-subtle md:sr-only">
+            Edição: {editionTagOf(line.editionSupply)}
+          </p>
           {showAvailability ? (
             <p className="mt-1 text-small font-medium text-destructive-foreground">
               {availabilityLabel(line.available)}
