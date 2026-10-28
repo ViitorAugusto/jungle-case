@@ -1,0 +1,538 @@
+{
+  "generatedAt": "2026-10-27T22:52:11.184Z",
+  "url": "http://localhost:4173",
+  "runsPerProfile": 3,
+  "targets": {
+    "performance": 90,
+    "accessibility": 95,
+    "best-practices": 95,
+    "seo": 90
+  },
+  "environment": {
+    "lighthouse": "12.8.2",
+    "browser": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "benchmarkIndex": 4677,
+    "node": "v22.23.2",
+    "os": "Windows_NT 10.0.26200 x64",
+    "cpu": "AMD Ryzen 5 9600X 6-Core Processor",
+    "memoryGb": 31,
+    "conditions": {
+      "mobile": "simulate, RTT 150 ms, 1638 Kbps, CPU 4x, tela 412x823",
+      "desktop": "simulate, RTT 40 ms, 10240 Kbps, CPU 1x, tela 1350x940"
+    }
+  },
+  "results": [
+    {
+      "page": "home",
+      "path": "/",
+      "formFactor": "mobile",
+      "medianRun": 3,
+      "median": {
+        "scores": {
+          "performance": 87,
+          "accessibility": 100,
+          "best-practices": 100,
+          "seo": 92
+        },
+        "metrics": {
+          "lcp": {
+            "value": 3684.015799999999,
+            "display": "3.7 s"
+          },
+          "cls": {
+            "value": 0.044269055860256756,
+            "display": "0.044"
+          },
+          "tbt": {
+            "value": 32.5,
+            "display": "30 ms"
+          },
+          "fcp": {
+            "value": 2270.5158,
+            "display": "2.3 s"
+          },
+          "si": {
+            "value": 2270.5158,
+            "display": "2.3 s"
+          }
+        }
+      },
+      "runs": [
+        {
+          "scores": {
+            "performance": 87,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 92
+          },
+          "metrics": {
+            "lcp": {
+              "value": 3690.365799999999,
+              "display": "3.7 s"
+            },
+            "cls": {
+              "value": 0.044269055860256756,
+              "display": "0.044"
+            },
+            "tbt": {
+              "value": 43,
+              "display": "40 ms"
+            },
+            "fcp": {
+              "value": 2273.8657999999996,
+              "display": "2.3 s"
+            },
+            "si": {
+              "value": 2273.8657999999996,
+              "display": "2.3 s"
+            }
+          }
+        },
+        {
+          "scores": {
+            "performance": 91,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 92
+          },
+          "metrics": {
+            "lcp": {
+              "value": 3175.520949999999,
+              "display": "3.2 s"
+            },
+            "cls": {
+              "value": 0.0417485948196261,
+              "display": "0.042"
+            },
+            "tbt": {
+              "value": 38.5,
+              "display": "40 ms"
+            },
+            "fcp": {
+              "value": 2123.7963999999993,
+              "display": "2.1 s"
+            },
+            "si": {
+              "value": 2123.7963999999993,
+              "display": "2.1 s"
+            }
+          }
+        },
+        {
+          "scores": {
+            "performance": 87,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 92
+          },
+          "metrics": {
+            "lcp": {
+              "value": 3684.015799999999,
+              "display": "3.7 s"
+            },
+            "cls": {
+              "value": 0.044269055860256756,
+              "display": "0.044"
+            },
+            "tbt": {
+              "value": 32.5,
+              "display": "30 ms"
+            },
+            "fcp": {
+              "value": 2270.5158,
+              "display": "2.3 s"
+            },
+            "si": {
+              "value": 2270.5158,
+              "display": "2.3 s"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "page": "home",
+      "path": "/",
+      "formFactor": "desktop",
+      "medianRun": 3,
+      "median": {
+        "scores": {
+          "performance": 100,
+          "accessibility": 100,
+          "best-practices": 100,
+          "seo": 92
+        },
+        "metrics": {
+          "lcp": {
+            "value": 757.0404999999998,
+            "display": "0.8 s"
+          },
+          "cls": {
+            "value": 0.005921411437949754,
+            "display": "0.006"
+          },
+          "tbt": {
+            "value": 0,
+            "display": "0 ms"
+          },
+          "fcp": {
+            "value": 516.88645,
+            "display": "0.5 s"
+          },
+          "si": {
+            "value": 516.88645,
+            "display": "0.5 s"
+          }
+        }
+      },
+      "runs": [
+        {
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 92
+          },
+          "metrics": {
+            "lcp": {
+              "value": 760.2262499999999,
+              "display": "0.8 s"
+            },
+            "cls": {
+              "value": 0.005921411437949754,
+              "display": "0.006"
+            },
+            "tbt": {
+              "value": 0,
+              "display": "0 ms"
+            },
+            "fcp": {
+              "value": 519.8036249999999,
+              "display": "0.5 s"
+            },
+            "si": {
+              "value": 519.8036249999999,
+              "display": "0.5 s"
+            }
+          }
+        },
+        {
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 92
+          },
+          "metrics": {
+            "lcp": {
+              "value": 755.3872500000001,
+              "display": "0.8 s"
+            },
+            "cls": {
+              "value": 0.005921411437949754,
+              "display": "0.006"
+            },
+            "tbt": {
+              "value": 0,
+              "display": "0 ms"
+            },
+            "fcp": {
+              "value": 514.9985250000001,
+              "display": "0.5 s"
+            },
+            "si": {
+              "value": 514.9985250000001,
+              "display": "0.5 s"
+            }
+          }
+        },
+        {
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 92
+          },
+          "metrics": {
+            "lcp": {
+              "value": 757.0404999999998,
+              "display": "0.8 s"
+            },
+            "cls": {
+              "value": 0.005921411437949754,
+              "display": "0.006"
+            },
+            "tbt": {
+              "value": 0,
+              "display": "0 ms"
+            },
+            "fcp": {
+              "value": 516.88645,
+              "display": "0.5 s"
+            },
+            "si": {
+              "value": 516.88645,
+              "display": "0.5 s"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "page": "detalhe",
+      "path": "/nfts/nft-002",
+      "formFactor": "mobile",
+      "medianRun": 2,
+      "median": {
+        "scores": {
+          "performance": 91,
+          "accessibility": 100,
+          "best-practices": 100,
+          "seo": 92
+        },
+        "metrics": {
+          "lcp": {
+            "value": 3175.915250000001,
+            "display": "3.2 s"
+          },
+          "cls": {
+            "value": 0,
+            "display": "0"
+          },
+          "tbt": {
+            "value": 11.5,
+            "display": "10 ms"
+          },
+          "fcp": {
+            "value": 2099.3322000000007,
+            "display": "2.1 s"
+          },
+          "si": {
+            "value": 2099.3322000000007,
+            "display": "2.1 s"
+          }
+        }
+      },
+      "runs": [
+        {
+          "scores": {
+            "performance": 91,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 92
+          },
+          "metrics": {
+            "lcp": {
+              "value": 3175.7417499999997,
+              "display": "3.2 s"
+            },
+            "cls": {
+              "value": 0,
+              "display": "0"
+            },
+            "tbt": {
+              "value": 9.5,
+              "display": "10 ms"
+            },
+            "fcp": {
+              "value": 2101.9934,
+              "display": "2.1 s"
+            },
+            "si": {
+              "value": 2101.9934,
+              "display": "2.1 s"
+            }
+          }
+        },
+        {
+          "scores": {
+            "performance": 91,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 92
+          },
+          "metrics": {
+            "lcp": {
+              "value": 3175.915250000001,
+              "display": "3.2 s"
+            },
+            "cls": {
+              "value": 0,
+              "display": "0"
+            },
+            "tbt": {
+              "value": 11.5,
+              "display": "10 ms"
+            },
+            "fcp": {
+              "value": 2099.3322000000007,
+              "display": "2.1 s"
+            },
+            "si": {
+              "value": 2099.3322000000007,
+              "display": "2.1 s"
+            }
+          }
+        },
+        {
+          "scores": {
+            "performance": 91,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 92
+          },
+          "metrics": {
+            "lcp": {
+              "value": 3186.418999999999,
+              "display": "3.2 s"
+            },
+            "cls": {
+              "value": 0,
+              "display": "0"
+            },
+            "tbt": {
+              "value": 13,
+              "display": "10 ms"
+            },
+            "fcp": {
+              "value": 2099.3351999999995,
+              "display": "2.1 s"
+            },
+            "si": {
+              "value": 2099.3351999999995,
+              "display": "2.1 s"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "page": "detalhe",
+      "path": "/nfts/nft-002",
+      "formFactor": "desktop",
+      "medianRun": 3,
+      "median": {
+        "scores": {
+          "performance": 100,
+          "accessibility": 100,
+          "best-practices": 100,
+          "seo": 92
+        },
+        "metrics": {
+          "lcp": {
+            "value": 737.4667499999999,
+            "display": "0.7 s"
+          },
+          "cls": {
+            "value": 0.0002343361774652351,
+            "display": "0"
+          },
+          "tbt": {
+            "value": 0,
+            "display": "0 ms"
+          },
+          "fcp": {
+            "value": 511.47339999999997,
+            "display": "0.5 s"
+          },
+          "si": {
+            "value": 511.47339999999997,
+            "display": "0.5 s"
+          }
+        }
+      },
+      "runs": [
+        {
+          "scores": {
+            "performance": 99,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 92
+          },
+          "metrics": {
+            "lcp": {
+              "value": 813.491,
+              "display": "0.8 s"
+            },
+            "cls": {
+              "value": 0.0002343361774652351,
+              "display": "0"
+            },
+            "tbt": {
+              "value": 0,
+              "display": "0 ms"
+            },
+            "fcp": {
+              "value": 566.2927999999999,
+              "display": "0.6 s"
+            },
+            "si": {
+              "value": 566.2927999999999,
+              "display": "0.6 s"
+            }
+          }
+        },
+        {
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 92
+          },
+          "metrics": {
+            "lcp": {
+              "value": 736.0980000000002,
+              "display": "0.7 s"
+            },
+            "cls": {
+              "value": 0.0002343361774652351,
+              "display": "0"
+            },
+            "tbt": {
+              "value": 0,
+              "display": "0 ms"
+            },
+            "fcp": {
+              "value": 508.8784000000001,
+              "display": "0.5 s"
+            },
+            "si": {
+              "value": 508.8784000000001,
+              "display": "0.5 s"
+            }
+          }
+        },
+        {
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 92
+          },
+          "metrics": {
+            "lcp": {
+              "value": 737.4667499999999,
+              "display": "0.7 s"
+            },
+            "cls": {
+              "value": 0.0002343361774652351,
+              "display": "0"
+            },
+            "tbt": {
+              "value": 0,
+              "display": "0 ms"
+            },
+            "fcp": {
+              "value": 511.47339999999997,
+              "display": "0.5 s"
+            },
+            "si": {
+              "value": 511.47339999999997,
+              "display": "0.5 s"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

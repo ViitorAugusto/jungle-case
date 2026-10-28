@@ -1,0 +1,269 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+/*
+ * Roboto Mono variável, face latin do @fontsource com o eixo de peso limitado
+ * a 400–700 (os pesos usados): 22 KB em vez de 33 KB. Gerada por
+ * `npm run fonts:subset`; o unicode-range é o mesmo da face original. Texto
+ * fora dele usa as fontes de fallback de --font-sans.
+ */
+@font-face {
+  font-family: 'Roboto Mono Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 700;
+  src: url('./fonts/roboto-mono-latin-wght-400-700.woff2') format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/*
+ * Tokens do design system, extraídos do Figma (estilos publicados no arquivo).
+ * Componentes usam somente estes tokens: nada de cor, medida ou raio soltos.
+ * Referência: docs/referencias/design-system.md.
+ */
+:root {
+  /* Paleta (Color/*, Text/*) */
+  --palette-primary: #d28a4c;
+  --palette-primary-light: #dd9a5f;
+  --palette-primary-dark: #c47b3e;
+  --palette-amber: #e3a44e;
+  --palette-foreground: #f5f1eb;
+  --palette-elevated: #fbfbfb;
+  --palette-secondary: #b39463;
+  --palette-surface-card: #241612;
+  --palette-surface-raised: #2f1d15;
+  --palette-ink: #140d0a;
+  --palette-surface-dark: #38220f;
+  --palette-border: #3f2319;
+  --palette-border-soft: #55321f;
+  --palette-gray-light: #ededed;
+  --palette-success: #00a66c;
+  --palette-error: #ed1b2e;
+  --palette-text-primary: #f7f3ec;
+  --palette-text-secondary: #cfb28c;
+  --palette-text-accent: #e89b55;
+  --palette-text-coral: #f0805f;
+
+  /* Marcas de terceiros (login social): cores oficiais publicadas pelas marcas */
+  --palette-brand-google-blue: #4285f4;
+  --palette-brand-google-green: #34a853;
+  --palette-brand-google-yellow: #fbbc05;
+  --palette-brand-google-red: #ea4335;
+  --palette-brand-facebook: #1877f2;
+
+  /* Papéis semânticos (shadcn/ui) */
+  --background: var(--palette-ink);
+  --foreground: var(--palette-foreground);
+  --card: var(--palette-surface-card);
+  --card-foreground: var(--palette-foreground);
+  --popover: var(--palette-surface-raised);
+  --popover-foreground: var(--palette-foreground);
+  --primary: var(--palette-primary);
+  --primary-foreground: var(--palette-ink);
+  --secondary: var(--palette-surface-dark);
+  --secondary-foreground: var(--palette-foreground);
+  --muted: var(--palette-surface-raised);
+  --muted-foreground: var(--palette-text-secondary);
+  --accent: var(--palette-surface-raised);
+  --accent-foreground: var(--palette-text-accent);
+  --destructive: var(--palette-error);
+  /* Texto de erro: Text/Coral tem contraste AA sobre Ink; o vermelho puro fica para bordas e ícones. */
+  --destructive-foreground: var(--palette-text-coral);
+  --success: var(--palette-success);
+  --border: var(--palette-border);
+  --input: var(--palette-border-soft);
+  --ring: var(--palette-primary-light);
+
+  --radius: 6px;
+
+  /* Grades de layout do Figma */
+  --layout-footer-columns: repeat(3, minmax(0, 1fr)) minmax(0, 357px);
+  --layout-catalog-columns: 310px minmax(0, 1fr);
+  /* Margem lateral do conteúdo de 1200 px (alinha o painel de login ao botão Entrar) */
+  --layout-content-gutter: max(40px, calc((100vw - 1200px) / 2));
+  --layout-panel-max-height: calc(100dvh - 6rem);
+  /* Carrinho e pagamento: conteúdo + coluna de resumo */
+  --layout-cart-columns: minmax(0, 1fr) 332px;
+  --layout-cart-line: minmax(0, 1fr) 96px 132px 96px 40px;
+  --layout-checkout-columns: minmax(0, 1fr) 405px;
+  --layout-choice-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+@theme inline {
+  --font-sans: 'Roboto Mono Variable', 'Roboto Mono', ui-monospace, monospace;
+  --font-mono: 'Roboto Mono Variable', 'Roboto Mono', ui-monospace, monospace;
+
+  /* Tipografia consolidada (tamanho / altura de linha do Figma) */
+  --text-display: 43px;
+  --text-display--line-height: 70px;
+  --text-heading-xl: 32px;
+  --text-heading-xl--line-height: 40px;
+  --text-heading-lg: 28px;
+  --text-heading-lg--line-height: 37px;
+  --text-heading: 24px;
+  --text-heading--line-height: 32px;
+  --text-title: 22px;
+  --text-title--line-height: 28px;
+  --text-lead: 18px;
+  --text-lead--line-height: 24px;
+  --text-lead-sm: 17px;
+  --text-lead-sm--line-height: 16px;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 21px;
+  --text-body: 15px;
+  --text-body--line-height: 20px;
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 22px;
+  --text-caption: 13px;
+  --text-caption--line-height: 16px;
+  --text-small: 12px;
+  --text-small--line-height: 16px;
+  --text-micro: 10px;
+  --text-micro--line-height: 13px;
+  --text-nano: 9px;
+  --text-nano--line-height: 12px;
+
+  --tracking-brand: 0.1em;
+
+  /* Raios */
+  --radius-xs: 4px;
+  --radius-sm: var(--radius);
+  --radius-md: 8px;
+  --radius-field: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+  --radius-sheet: 32px;
+
+  /* Larguras de layout */
+  /* Medidas recorrentes do Figma */
+  --spacing-control: 35px;
+  --spacing-search: 45px;
+  --spacing-icon-sm: 18px;
+  --leading-compact: 18px;
+  --leading-list: 30px;
+
+  --container-content: 1200px;
+  /* Altura provisória das seções com `defer-render` antes da primeira renderização. */
+  --defer-render-estimate: 600px;
+  /* Card da Confirmação de Pedido (Figma: 578 px). */
+  --container-receipt: 578px;
+  --container-sidebar: 310px;
+
+  --shadow-field: 0 0 20px rgb(10 6 4 / 0.45);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-ink: var(--palette-ink);
+  --color-surface-card: var(--palette-surface-card);
+  --color-surface-raised: var(--palette-surface-raised);
+  --color-surface-dark: var(--palette-surface-dark);
+  --color-border-soft: var(--palette-border-soft);
+  --color-primary-light: var(--palette-primary-light);
+  --color-primary-dark: var(--palette-primary-dark);
+  --color-amber: var(--palette-amber);
+  --color-subtle: var(--palette-secondary);
+  --color-elevated: var(--palette-elevated);
+  --color-gray-light: var(--palette-gray-light);
+  --color-text-primary: var(--palette-text-primary);
+  --color-text-secondary: var(--palette-text-secondary);
+  --color-text-accent: var(--palette-text-accent);
+  --color-text-coral: var(--palette-text-coral);
+  --color-brand-google-blue: var(--palette-brand-google-blue);
+  --color-brand-google-green: var(--palette-brand-google-green);
+  --color-brand-google-yellow: var(--palette-brand-google-yellow);
+  --color-brand-google-red: var(--palette-brand-google-red);
+  --color-brand-facebook: var(--palette-brand-facebook);
+
+  --animate-shimmer: shimmer 1.6s linear infinite;
+
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+}
+
+/* Skeleton: brilho que percorre a superfície; parado com movimento reduzido (regra abaixo). */
+@utility shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--palette-surface-card) 0%,
+    var(--palette-surface-raised) 50%,
+    var(--palette-surface-card) 100%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * Seções abaixo da dobra: o navegador só renderiza (e só baixa as imagens
+ * lazy) quando elas se aproximam da tela. Sem isso, o Chrome antecipa imagens
+ * lazy a até ~3000 px e elas disputam banda com o caminho crítico. A altura
+ * estimada só vale até a primeira renderização; depois o `auto` guarda a real.
+ * Elementos ocultos assim continuam na árvore de acessibilidade e na busca da página.
+ */
+@utility defer-render {
+  content-visibility: auto;
+  contain-intrinsic-size: auto var(--defer-render-estimate);
+}
+
+/* Foco visível único (R68): contorno de 2 px na cor de anel, afastado 2 px do elemento. */
+@utility focus-ring {
+  outline: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
